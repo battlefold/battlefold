@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation'
 import GameBoard from './GameBoard'
 import PlayerStats from './PlayerStats'
 import { Button } from "@/components/ui/button"
+import ActionPopup from './ActionPopup'
 
 const BOARD_SIZE = 8
-const SHIP_COUNT = 5
-const COUNTDOWN_TIME = 5
+const SHIP_COUNT = 2
+const COUNTDOWN_TIME = 3  // Changed from 5 to 3
 const ANIMATION_DURATION = 3500
 const ANIMATION_INTERVAL = 150
 const INITIAL_TURN_MULTIPLIER = 60
@@ -17,7 +18,7 @@ const BASE_POINTS_MISS = 1
 
 type Cell = 'empty' | 'player-ship' | 'ai-ship' | 'player-hit' | 'ai-hit' | 'player-miss' | 'ai-miss' | 'both-miss' | 'both-hit' | 'player-footprint' | 'ai-footprint'
 type Board = Cell[][]
-type GamePhase = 'placement' | 'countdown' | 'battle' | 'result'
+type GamePhase = 'placement' | 'pre-countdown' | 'countdown' | 'battle' | 'result'
 type Page = 'game' | 'ranking' | 'instructions'
 
 const createEmptyBoard = (): Board => Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill('empty'))
@@ -56,14 +57,20 @@ export default function BattleFold() {
   const [turnMultiplier, setTurnMultiplier] = useState(INITIAL_TURN_MULTIPLIER)
   const [playerStreak, setPlayerStreak] = useState(0)
   const [aiStreak, setAiStreak] = useState(0)
+  const [showClaimPointsPopup, setShowClaimPointsPopup] = useState(false)
+  const [showCollectMapPopup, setShowCollectMapPopup] = useState(false)
 
   const router = useRouter()
 
   useEffect(() => {
     if (playerShipsPlaced === SHIP_COUNT) {
       setAiBoard(placeRandomShips(createEmptyBoard(), 'ai'))
-      setGamePhase('countdown')
       setMessage("Preparing for battle!")
+      
+      // Add 1-second delay before starting the countdown
+      setTimeout(() => {
+        setGamePhase('countdown')
+      }, 1000)
     }
   }, [playerShipsPlaced])
 
@@ -257,9 +264,19 @@ export default function BattleFold() {
     }
   }
 
+  const handleClaimPoints = () => {
+    console.log('Claim Points')
+    setShowClaimPointsPopup(true)
+  }
+
+  const handleCollectMap = () => {
+    console.log('Collect Map')
+    setShowCollectMapPopup(true)
+  }
+
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-[#FBF7EF] pb-28 pt-8">
-      <div className="flex flex-col items-center w-full max-w-md">
+      <div className="flex flex-col items-center w-full max-w-md px-4">
         <h1 className="text-3xl font-bold mb-4">BattleFold</h1>
         <div className="mb-4 text-lg font-semibold h-6">{message}</div>
         <PlayerStats
@@ -269,7 +286,9 @@ export default function BattleFold() {
           aiPoints={aiPoints}
         />
         {gamePhase === 'countdown' ? (
-          <div className="text-6xl font-bold mb-4 h-[368px] flex items-center justify-center">{countdown}</div>
+          <div className="text-6xl font-bold mb-4 h-[368px] flex items-center justify-center">
+            {countdown}
+          </div>
         ) : (
           <GameBoard
             board={gamePhase === 'result' && isAnimating ? animationBoard : playerBoard}
@@ -282,11 +301,35 @@ export default function BattleFold() {
           />
         )}
         {gamePhase === 'result' && !isAnimating && (
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center w-full">
             <p className="text-xl font-bold mb-2">{winner === 'player' ? 'You win!' : 'Enemy wins!'}</p>
-            <p className="mb-2">Final Points - Player: {playerPoints}, Enemy: {aiPoints}</p>
-            <Button onClick={resetGame}>Play Again</Button>
+            <p className="mb-4">Final Points - Player: {playerPoints}, Enemy: {aiPoints}</p>
+            <div className="space-y-2">
+              <div className="flex space-x-2">
+                <Button onClick={handleClaimPoints} className="flex-1 bg-yellow-500 hover:bg-yellow-600">
+                  Claim Points
+                </Button>
+                <Button onClick={handleCollectMap} className="flex-1 bg-blue-500 hover:bg-blue-600">
+                  Collect Map
+                </Button>
+              </div>
+              <Button onClick={resetGame} className="w-full mt-4">New Game</Button>
+            </div>
           </div>
+        )}
+        {showClaimPointsPopup && (
+          <ActionPopup
+            title="Points Claimed!"
+            message={`You've successfully claimed ${playerPoints} points.`}
+            onClose={() => setShowClaimPointsPopup(false)}
+          />
+        )}
+        {showCollectMapPopup && (
+          <ActionPopup
+            title="Map Collected!"
+            message="You've successfully collected a new map piece."
+            onClose={() => setShowCollectMapPopup(false)}
+          />
         )}
       </div>
     </div>

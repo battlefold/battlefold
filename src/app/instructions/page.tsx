@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 export default function InstructionsPage() {
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-[#FBF7EF] pb-28 px-4 pt-8">
-      <div className="w-full max-w-[368px]"> {/* Added this wrapper div */}
+      <div className="w-full max-w-[368px]">
         <h1 className="text-3xl font-bold mb-6">How to Play BattleFold</h1>
         <ScrollArea className="h-[calc(100vh-200px)]">
           <div className="space-y-8">
@@ -14,7 +14,7 @@ export default function InstructionsPage() {
               <h2 className="text-2xl font-semibold mb-3">Setup</h2>
               <ul className="list-disc list-inside space-y-2">
                 <li>Game is played on an 8x8 grid</li>
-                <li>You and the enemy each have 5 ships</li>
+                <li>You and the enemy each have 2 ships</li> {/* Changed from 5 to 2 */}
               </ul>
             </section>
             <section>
