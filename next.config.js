@@ -2,25 +2,18 @@
 const nextConfig = {
     reactStrictMode: true,
     swcMinify: true,
-    typescript: {
-        // !! WARN !!
-        // Dangerously allow production builds to successfully complete even if
-        // your project has type errors.
-        // !! WARN !!
-        ignoreBuildErrors: true,
-    },
-    async headers() {
-        return [
-            {
-                source: "/(.*)",
-                headers: [
-                    {
-                        key: "X-Frame-Options",
-                        value: "SAMEORIGIN",
-                    },
-                ],
-            },
-        ];
+    webpack: (config, { isServer }) => {
+        if (!isServer) {
+            config.resolve.fallback = {
+                ...config.resolve.fallback,
+                net: false,
+                dns: false,
+                tls: false,
+                fs: false,
+                punycode: false,
+            };
+        }
+        return config;
     },
 }
 
