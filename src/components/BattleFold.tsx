@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import ActionPopup from './ActionPopup'
 
 const BOARD_SIZE = 8
-const SHIP_COUNT = 2
+const SHIP_COUNT = 3  // Changed from 2 to 3
 const COUNTDOWN_TIME = 3  // Changed from 5 to 3
 const ANIMATION_DURATION = 3500
 const ANIMATION_INTERVAL = 150
@@ -275,7 +275,7 @@ export default function BattleFold() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-[#FBF7EF] pb-28 pt-8">
+    <div className="flex flex-col items-center justify-start min-h-screen bg-[#FBF7EF] pb-28 pt-16"> {/* Changed pt-8 to pt-16 */}
       <div className="flex flex-col items-center w-full max-w-md px-4">
         <h1 className="text-3xl font-bold mb-4">BattleFold</h1>
         <div className="mb-4 text-lg font-semibold h-6">{message}</div>
@@ -302,8 +302,7 @@ export default function BattleFold() {
         )}
         {gamePhase === 'result' && !isAnimating && (
           <div className="mt-4 text-center w-full">
-            <p className="text-xl font-bold mb-2">{winner === 'player' ? 'You win!' : 'Enemy wins!'}</p>
-            <p className="mb-4">Final Points - Player: {playerPoints}, Enemy: {aiPoints}</p>
+            <p className="text-xl font-bold mb-4">{winner === 'player' ? 'You win!' : 'Enemy wins!'}</p>
             <div className="space-y-2">
               <div className="flex space-x-2">
                 <Button onClick={handleClaimPoints} className="flex-1 bg-yellow-500 hover:bg-yellow-600">

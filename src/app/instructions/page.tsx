@@ -14,7 +14,7 @@ export default function InstructionsPage() {
               <h2 className="text-2xl font-semibold mb-3">Setup</h2>
               <ul className="list-disc list-inside space-y-2">
                 <li>Game is played on an 8x8 grid</li>
-                <li>You and the enemy each have 2 ships</li> {/* Changed from 5 to 2 */}
+                <li>You and the enemy each have 3 ships</li> {/* Changed from 2 to 3 */}
               </ul>
             </section>
             <section>
