@@ -52,9 +52,9 @@ export default function RankingList() {
   const winRate = currentUserData ? (currentUserData.wins / (currentUserData.wins + currentUserData.losses)) * 100 : 0
 
   return (
-    <ScrollArea className="w-full h-[calc(100vh-64px)]"> {/* Adjusted height */}
-      <div className="flex flex-col items-center justify-start bg-[#FBF7EF] pb-28 px-4">
-        <div className="w-full max-w-2xl mb-6 p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg text-white shadow-lg">
+    <ScrollArea className="w-full h-[calc(100vh-64px)]">
+      <div className="flex flex-col items-center justify-start bg-[#FBF7EF] pb-28 px-1 pt-4">
+        <div className="w-full max-w-[368px] mb-6 p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg text-white shadow-lg">
           <div className="flex justify-between items-center mb-2">
             <div>
               <h2 className="text-sm font-semibold opacity-75">Your Current Rank</h2>
@@ -79,7 +79,7 @@ export default function RankingList() {
             Win Rate: {winRate.toFixed(1)}%
           </div>
         </div>
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-[368px]">
           {sortedPlayers.map((player, index) => {
             const points = calculatePoints(player.wins, player.losses)
             const isCurrentUser = player.name === currentUser
