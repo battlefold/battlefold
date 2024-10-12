@@ -39,7 +39,7 @@ export default function GameBoard({
   }
 
   return (
-    <div className="grid grid-cols-8 gap-1" style={{ width: '368px', height: '368px' }}>
+    <div className="grid grid-cols-6 gap-2" style={{ width: '300px', height: '300px' }}>
       {board.map((row, y) =>
         row.map((cell, x) => {
           const playerCell = board[y][x]
@@ -47,7 +47,7 @@ export default function GameBoard({
           return (
             <button
               key={`${x}-${y}`}
-              className={`w-full h-full ${getCellColor(playerCell, aiCell)} rounded-sm hover:opacity-75 transition-opacity`}
+              className={`w-full h-full aspect-square ${getCellColor(playerCell, aiCell)} rounded-sm hover:opacity-75 transition-opacity`}
               onClick={() => handleCellClick(x, y)}
               disabled={gameOver || (!isPlayerTurn && gamePhase === 'battle') || gamePhase === 'countdown' || isAnimating}
             />
