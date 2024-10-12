@@ -276,7 +276,7 @@ export default function BattleFold() {
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-[#FBF7EF] pb-28 pt-14">
       <div className="flex flex-col items-center w-full max-w-[300px]">
-        <h1 className="text-2xl font-bold mb-2">BattleFold</h1>
+        <h1 className="text-2xl font-bold mb-2">Play BattleFold</h1>
         <div className="mb-2 text-sm font-semibold h-6 w-full text-center">
           {gameOver 
             ? winner === 'player' ? 'You win!' : 'Enemy wins!' 

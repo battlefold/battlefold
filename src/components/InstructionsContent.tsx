@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Timer, Zap, Star } from 'lucide-react'
 
 export default function InstructionsContent() {
   return (
@@ -13,7 +14,7 @@ export default function InstructionsContent() {
             <section>
               <h2 className="text-2xl font-semibold mb-3">Setup</h2>
               <ul className="list-disc list-inside space-y-2">
-                <li>Game is played on an 8x8 grid</li>
+                <li>Game is played on an 6x6 grid</li>
                 <li>You and the enemy each have 3 ships</li>
               </ul>
             </section>
@@ -53,6 +54,40 @@ export default function InstructionsContent() {
                   <span>Both hit same cell</span>
                 </li>
               </ul>
+            </section>
+            <section>
+              <h2 className="text-2xl font-semibold mb-3">Points System</h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Base Points</h3>
+                  <ul className="list-disc list-inside">
+                    <li>Hit: 20 points</li>
+                    <li>Miss: 1 point</li>
+                  </ul>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <Timer className="w-5 h-5 mt-1 flex-shrink-0 text-purple-500" />
+                  <div>
+                    <h3 className="text-md font-semibold">Round Multiplier</h3>
+                    <p className="text-sm">Starts at 60x, decreases by 1 each round</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <Zap className="w-5 h-5 mt-1 flex-shrink-0 text-yellow-500" />
+                  <div>
+                    <h3 className="text-md font-semibold">Streak Multiplier</h3>
+                    <p className="text-sm">Increases by 1 for each consecutive hit, resets on miss</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <Star className="w-5 h-5 mt-1 flex-shrink-0 text-blue-500" />
+                  <div>
+                    <h3 className="text-md font-semibold">Final Score Calculation</h3>
+                    <p className="text-sm">Points = Base Points × Round Multiplier × Streak Multiplier</p>
+                    <p className="text-sm mt-2">Total Score = (Wins × 3) - Losses</p>
+                  </div>
+                </div>
+              </div>
             </section>
           </div>
         </ScrollArea>
