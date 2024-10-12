@@ -7,12 +7,12 @@ import PlayerStats from './PlayerStats'
 import { Button } from "@/components/ui/button"
 import ActionPopup from './ActionPopup'
 
-const BOARD_SIZE = 8
+const BOARD_SIZE = 6
 const SHIP_COUNT = 3  // Changed from 2 to 3
 const COUNTDOWN_TIME = 3  // Changed from 5 to 3
 const ANIMATION_DURATION = 3500
 const ANIMATION_INTERVAL = 150
-const INITIAL_TURN_MULTIPLIER = 60
+const INITIAL_ROUND_MULTIPLIER = 60  // Changed from INITIAL_TURN_MULTIPLIER
 const BASE_POINTS_HIT = 20
 const BASE_POINTS_MISS = 1
 
@@ -54,9 +54,9 @@ export default function BattleFold() {
   const [animationBoard, setAnimationBoard] = useState<Board>(createEmptyBoard())
   const [playerPoints, setPlayerPoints] = useState(0)
   const [aiPoints, setAiPoints] = useState(0)
-  const [turnMultiplier, setTurnMultiplier] = useState(INITIAL_TURN_MULTIPLIER)
-  const [playerStreak, setPlayerStreak] = useState(0)
-  const [aiStreak, setAiStreak] = useState(0)
+  const [roundMultiplier, setRoundMultiplier] = useState(INITIAL_ROUND_MULTIPLIER)  // Changed from turnMultiplier
+  const [playerStreakMultiplier, setPlayerStreakMultiplier] = useState(1)  // Changed from playerStreak and initialized to 1
+  const [aiStreakMultiplier, setAiStreakMultiplier] = useState(1)  // Changed from aiStreak and initialized to 1
   const [showClaimPointsPopup, setShowClaimPointsPopup] = useState(false)
   const [showCollectMapPopup, setShowCollectMapPopup] = useState(false)
 
@@ -107,10 +107,9 @@ export default function BattleFold() {
     return () => clearInterval(animationTimer)
   }, [gamePhase, isAnimating])
 
-  const calculatePoints = (isHit: boolean, streak: number) => {
+  const calculatePoints = (isHit: boolean, streakMultiplier: number) => {
     const basePoints = isHit ? BASE_POINTS_HIT : BASE_POINTS_MISS
-    const streakMultiplier = 1 + streak
-    return Math.round(basePoints * turnMultiplier * streakMultiplier)
+    return Math.round(basePoints * roundMultiplier * streakMultiplier)
   }
 
   const handleCellClick = (x: number, y: number) => {
@@ -143,7 +142,7 @@ export default function BattleFold() {
         }
         setMessage("Hit! Your turn again.")
         isHit = true
-        setPlayerStreak(prev => prev + 1)
+        setPlayerStreakMultiplier(prev => prev + 1)
       } else {
         if (newPlayerBoard[y][x] === 'ai-footprint') {
           newPlayerBoard[y][x] = 'both-miss'
@@ -153,14 +152,14 @@ export default function BattleFold() {
         }
         setMessage("Miss! Enemy's turn.")
         setIsPlayerTurn(false)
-        setPlayerStreak(0)
+        setPlayerStreakMultiplier(1)
       }
 
-      const points = calculatePoints(isHit, playerStreak)
+      const points = calculatePoints(isHit, playerStreakMultiplier)
       setPlayerPoints(prev => prev + points)
       setPlayerBoard(newPlayerBoard)
       setAiBoard(newAiBoard)
-      setTurnMultiplier(prev => Math.max(prev - 1, 1))
+      setRoundMultiplier(prev => Math.max(prev - 1, 1))
       checkGameOver(newPlayerBoard, newAiBoard)
     }
   }
@@ -184,7 +183,7 @@ export default function BattleFold() {
       }
       setMessage("Enemy hit your ship! Your turn.")
       isHit = true
-      setAiStreak(prev => prev + 1)
+      setAiStreakMultiplier(prev => prev + 1)
     } else {
       if (newAiBoard[y][x] === 'player-footprint') {
         newPlayerBoard[y][x] = 'both-miss'
@@ -193,15 +192,15 @@ export default function BattleFold() {
         newPlayerBoard[y][x] = 'ai-footprint'
       }
       setMessage("Enemy missed. Your turn.")
-      setAiStreak(0)
+      setAiStreakMultiplier(1)
     }
 
-    const points = calculatePoints(isHit, aiStreak)
+    const points = calculatePoints(isHit, aiStreakMultiplier)
     setAiPoints(prev => prev + points)
     setPlayerBoard(newPlayerBoard)
     setAiBoard(newAiBoard)
     setIsPlayerTurn(true)
-    setTurnMultiplier(prev => Math.max(prev - 1, 1))
+    setRoundMultiplier(prev => Math.max(prev - 1, 1))
     checkGameOver(newPlayerBoard, newAiBoard)
   }
 
@@ -239,9 +238,9 @@ export default function BattleFold() {
     setAnimationBoard(createEmptyBoard())
     setPlayerPoints(0)
     setAiPoints(0)
-    setTurnMultiplier(INITIAL_TURN_MULTIPLIER)
-    setPlayerStreak(0)
-    setAiStreak(0)
+    setRoundMultiplier(INITIAL_ROUND_MULTIPLIER)
+    setPlayerStreakMultiplier(1)
+    setAiStreakMultiplier(1)
   }
 
   const getRandomCellColor = (): Cell => {
@@ -275,34 +274,48 @@ export default function BattleFold() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-[#FBF7EF] pb-28 pt-16"> {/* Changed pt-8 to pt-16 */}
-      <div className="flex flex-col items-center w-full max-w-md px-4">
-        <h1 className="text-3xl font-bold mb-4">BattleFold</h1>
-        <div className="mb-4 text-lg font-semibold h-6">{message}</div>
+    <div className="flex flex-col items-center justify-start min-h-screen bg-[#FBF7EF] pb-28 pt-14">
+      <div className="flex flex-col items-center w-full max-w-[300px]">
+        <h1 className="text-2xl font-bold mb-2">BattleFold</h1>
+        <div className="mb-2 text-sm font-semibold h-6 w-full text-center">
+          {gameOver 
+            ? winner === 'player' ? 'You win!' : 'Enemy wins!' 
+            : message
+          }
+        </div>
         <PlayerStats
-          turnMultiplier={turnMultiplier}
-          streak={isPlayerTurn ? playerStreak : aiStreak}
+          roundMultiplier={roundMultiplier}
+          streakMultiplier={isPlayerTurn ? playerStreakMultiplier : aiStreakMultiplier}
           playerPoints={playerPoints}
           aiPoints={aiPoints}
         />
         {gamePhase === 'countdown' ? (
-          <div className="text-6xl font-bold mb-4 h-[368px] flex items-center justify-center">
+          <div className="text-6xl font-bold mb-4 h-[300px] w-full flex items-center justify-center">
             {countdown}
           </div>
         ) : (
-          <GameBoard
-            board={gamePhase === 'result' && isAnimating ? animationBoard : playerBoard}
-            aiBoard={aiBoard}
-            handleCellClick={handleCellClick}
-            gamePhase={gamePhase}
-            isPlayerTurn={isPlayerTurn}
-            gameOver={gameOver}
-            isAnimating={isAnimating}
-          />
+          <>
+            <GameBoard
+              board={gamePhase === 'result' && isAnimating ? animationBoard : playerBoard}
+              aiBoard={aiBoard}
+              handleCellClick={handleCellClick}
+              gamePhase={gamePhase}
+              isPlayerTurn={isPlayerTurn}
+              gameOver={gameOver}
+              isAnimating={isAnimating}
+            />
+            {gamePhase === 'battle' && (
+              <Button 
+                onClick={resetGame} 
+                className="mt-4 px-4 py-1 text-sm font-normal bg-gray-200 text-gray-700 hover:bg-gray-300 w-full"
+              >
+                New Game
+              </Button>
+            )}
+          </>
         )}
         {gamePhase === 'result' && !isAnimating && (
           <div className="mt-4 text-center w-full">
-            <p className="text-xl font-bold mb-4">{winner === 'player' ? 'You win!' : 'Enemy wins!'}</p>
             <div className="space-y-2">
               <div className="flex space-x-2">
                 <Button onClick={handleClaimPoints} className="flex-1 bg-yellow-500 hover:bg-yellow-600">
