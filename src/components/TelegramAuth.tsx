@@ -18,7 +18,12 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
   }, [initData, onUserAuthenticated]);
 
   if (error) {
-    return <div className="text-red-500">Error: {error}</div>;
+    return (
+      <div className="text-red-500">
+        <p>Error: {error}</p>
+        <p>Please try reloading the app or contact support if the issue persists.</p>
+      </div>
+    );
   }
 
   if (!initData) {

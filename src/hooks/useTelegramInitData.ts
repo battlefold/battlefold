@@ -23,35 +23,41 @@ export function useTelegramInitData() {
     const searchParams = new URLSearchParams(window.location.hash.slice(1));
     const initDataStr = searchParams.get('tgWebAppData');
     
-    if (initDataStr) {
-      try {
-        const decodedInitData = JSON.parse(decodeURIComponent(initDataStr)) as TelegramInitData;
-        
-        fetch('/api/verify-telegram-data', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(decodedInitData),
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.isValid) {
-            setInitData(decodedInitData);
-          } else {
-            setError('Invalid Telegram init data');
-          }
-        })
-        .catch(error => {
-          console.error('Failed to verify Telegram init data:', error);
-          setError('Failed to verify Telegram init data');
-        });
-      } catch (error) {
-        console.error('Failed to parse Telegram init data:', error);
-        setError('Failed to parse Telegram init data');
+    if (!initDataStr) {
+      setError('No Telegram init data found in URL');
+      return;
+    }
+
+    try {
+      const decodedInitData = JSON.parse(decodeURIComponent(initDataStr));
+      
+      if (!decodedInitData || typeof decodedInitData !== 'object') {
+        setError('Invalid Telegram init data format');
+        return;
       }
-    } else {
-      setError('No Telegram init data found');
+
+      fetch('/api/verify-telegram-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(decodedInitData),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.isValid) {
+          setInitData(decodedInitData as TelegramInitData);
+        } else {
+          setError('Invalid Telegram init data signature');
+        }
+      })
+      .catch(error => {
+        console.error('Failed to verify Telegram init data:', error);
+        setError(`Failed to verify Telegram init data: ${error.message}`);
+      });
+    } catch (error) {
+      console.error('Failed to parse Telegram init data:', error);
+      setError(`Failed to parse Telegram init data: ${(error as Error).message}`);
     }
   }, []);
 
