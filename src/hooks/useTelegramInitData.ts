@@ -7,14 +7,13 @@ interface TelegramUser {
   username?: string;
   language_code?: string;
   is_premium?: boolean;
-  // Add other properties as needed
 }
 
 interface TelegramInitData {
   query_id?: string;
-  user: TelegramUser;
-  auth_date: number;
-  hash: string;
+  user?: TelegramUser;
+  auth_date?: number;
+  hash?: string;
   start_param?: string;
   chat_type?: string;
   chat_instance?: string;
@@ -38,8 +37,17 @@ export function useTelegramInitData() {
     setInitDataRaw(initDataStr);
 
     try {
-      const decodedData = JSON.parse(decodeURIComponent(initDataStr));
-      setInitDataState(decodedData);
+      const parsedData: TelegramInitData = {};
+      const pairs = initDataStr.split('&');
+      for (const pair of pairs) {
+        const [key, value] = pair.split('=');
+        if (key === 'user') {
+          parsedData.user = JSON.parse(decodeURIComponent(value));
+        } else {
+          parsedData[key as keyof TelegramInitData] = decodeURIComponent(value);
+        }
+      }
+      setInitDataState(parsedData);
     } catch (error) {
       console.error('Failed to parse Telegram init data:', error);
       setError(`Failed to parse Telegram init data: ${(error as Error).message}`);
@@ -50,42 +58,20 @@ export function useTelegramInitData() {
     if (!initDataState || !initDataRaw) {
       return undefined;
     }
-    const {
-      auth_date,
-      hash,
-      query_id,
-      chat_type,
-      chat_instance,
-      can_send_after,
-      start_param,
-    } = initDataState;
-    return [
-      { title: 'raw', value: initDataRaw },
-      { title: 'auth_date', value: new Date(auth_date * 1000).toLocaleString() },
-      { title: 'auth_date (raw)', value: auth_date },
-      { title: 'hash', value: hash },
-      { title: 'can_send_after', value: can_send_after ? new Date(can_send_after * 1000).toISOString() : undefined },
-      { title: 'can_send_after (raw)', value: can_send_after },
-      { title: 'query_id', value: query_id },
-      { title: 'start_param', value: start_param },
-      { title: 'chat_type', value: chat_type },
-      { title: 'chat_instance', value: chat_instance },
-    ];
+    return Object.entries(initDataState).map(([key, value]) => ({
+      title: key,
+      value: typeof value === 'object' ? JSON.stringify(value) : String(value),
+    }));
   }, [initDataState, initDataRaw]);
 
   const userRows = useMemo(() => {
     if (!initDataState?.user) {
       return undefined;
     }
-    const user = initDataState.user;
-    return [
-      { title: 'id', value: user.id.toString() },
-      { title: 'username', value: user.username },
-      { title: 'last_name', value: user.last_name },
-      { title: 'first_name', value: user.first_name },
-      { title: 'language_code', value: user.language_code },
-      { title: 'is_premium', value: user.is_premium },
-    ];
+    return Object.entries(initDataState.user).map(([key, value]) => ({
+      title: key,
+      value: String(value),
+    }));
   }, [initDataState]);
 
   return { initDataRaw, initDataState, initDataRows, userRows, error };

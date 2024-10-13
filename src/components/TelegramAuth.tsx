@@ -33,11 +33,29 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
   return (
     <div>
       <h2>Init Data</h2>
-      <pre>{JSON.stringify(initDataRows, null, 2)}</pre>
+      <table>
+        <tbody>
+          {initDataRows?.map((row, index) => (
+            <tr key={index}>
+              <td>{row.title}:</td>
+              <td>{row.value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
       {userRows && (
         <>
           <h2>User Data</h2>
-          <pre>{JSON.stringify(userRows, null, 2)}</pre>
+          <table>
+            <tbody>
+              {userRows.map((row, index) => (
+                <tr key={index}>
+                  <td>{row.title}:</td>
+                  <td>{row.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </>
       )}
     </div>
