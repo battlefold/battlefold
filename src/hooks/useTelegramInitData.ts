@@ -39,12 +39,17 @@ export function useTelegramInitData(): InitData | null {
     if (initDataRaw) {
       try {
         const decodedInitData = decodeURIComponent(initDataRaw);
-        const parsedInitData = Object.fromEntries(new URLSearchParams(decodedInitData));
+        const parsedInitData = Object.fromEntries(new URLSearchParams(decodedInitData)) as any;
         
         if (typeof parsedInitData.user === 'string') {
-          const userObj = JSON.parse(parsedInitData.user) as TelegramUser;
+          const userObj = JSON.parse(parsedInitData.user);
           parsedInitData.user = {
-            ...userObj,
+            id: userObj.id,
+            first_name: userObj.first_name,
+            last_name: userObj.last_name,
+            username: userObj.username,
+            language_code: userObj.language_code,
+            is_bot: userObj.is_bot,
             is_premium: userObj.is_premium ?? userObj.isPremium,
             photo_url: userObj.photo_url ?? userObj.photoUrl,
           };
