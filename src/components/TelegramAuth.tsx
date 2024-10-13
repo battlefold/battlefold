@@ -38,6 +38,9 @@ export default function TelegramAuth() {
     { title: 'auth_date', value: initData.auth_date },
     { title: 'query_id', value: initData.query_id },
     { title: 'hash', value: initData.hash },
+    { title: 'chat_instance', value: initData.chat_instance },
+    { title: 'chat_type', value: initData.chat_type },
+    { title: 'start_param', value: initData.start_param },
   ];
 
   const userRows: DisplayDataRow[] = initData.user
@@ -47,6 +50,9 @@ export default function TelegramAuth() {
         { title: 'last_name', value: initData.user.last_name },
         { title: 'username', value: initData.user.username },
         { title: 'language_code', value: initData.user.language_code },
+        { title: 'is_bot', value: initData.user.is_bot },
+        { title: 'premium', value: initData.user.premium },
+        { title: 'photo_url', value: initData.user.photo_url },
       ]
     : [];
 

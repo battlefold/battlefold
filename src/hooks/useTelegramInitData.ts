@@ -6,6 +6,9 @@ export interface TelegramUser {
   last_name?: string;
   username?: string;
   language_code?: string;
+  is_bot?: boolean;
+  premium?: boolean;
+  photo_url?: string;
 }
 
 export interface InitData {
@@ -13,6 +16,9 @@ export interface InitData {
   user?: TelegramUser;
   auth_date?: number;
   hash?: string;
+  chat_instance?: string;
+  chat_type?: 'private' | 'group' | 'supergroup' | 'channel';
+  start_param?: string;
 }
 
 export function useTelegramInitData(): InitData | null {
