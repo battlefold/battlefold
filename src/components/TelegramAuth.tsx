@@ -22,6 +22,10 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
       <div className="text-red-500">
         <p>Error: {error}</p>
         <p>Please try reloading the app or contact support if the issue persists.</p>
+        <details>
+          <summary>Debug Information</summary>
+          <pre>{JSON.stringify({ error, initData }, null, 2)}</pre>
+        </details>
       </div>
     );
   }

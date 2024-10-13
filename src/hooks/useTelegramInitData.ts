@@ -28,9 +28,21 @@ export function useTelegramInitData() {
       return;
     }
 
+    console.log('Raw initDataStr:', initDataStr); // Debug log
+
     try {
-      const decodedInitData = JSON.parse(decodeURIComponent(initDataStr));
+      // Try parsing without decoding first
+      let decodedInitData = JSON.parse(initDataStr);
       
+      // If parsing succeeds without decoding, log and proceed
+      console.log('Parsed without decoding:', decodedInitData);
+
+      if (!decodedInitData || typeof decodedInitData !== 'object') {
+        // If parsing without decoding doesn't yield an object, try decoding
+        decodedInitData = JSON.parse(decodeURIComponent(initDataStr));
+        console.log('Parsed after decoding:', decodedInitData);
+      }
+
       if (!decodedInitData || typeof decodedInitData !== 'object') {
         setError('Invalid Telegram init data format');
         return;
@@ -57,6 +69,7 @@ export function useTelegramInitData() {
       });
     } catch (error) {
       console.error('Failed to parse Telegram init data:', error);
+      console.error('initDataStr:', initDataStr); // Log the raw string for debugging
       setError(`Failed to parse Telegram init data: ${(error as Error).message}`);
     }
   }, []);
