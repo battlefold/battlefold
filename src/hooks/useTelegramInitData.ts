@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { verifyTelegramWebAppData } from '@/utils/telegramAuth';
 
 interface TelegramUser {
   id: number;
@@ -28,11 +27,25 @@ export function useTelegramInitData() {
       try {
         const decodedInitData = JSON.parse(decodeURIComponent(initDataStr)) as TelegramInitData;
         
-        if (verifyTelegramWebAppData(decodedInitData)) {
-          setInitData(decodedInitData);
-        } else {
-          setError('Invalid Telegram init data');
-        }
+        fetch('/api/verify-telegram-data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(decodedInitData),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.isValid) {
+            setInitData(decodedInitData);
+          } else {
+            setError('Invalid Telegram init data');
+          }
+        })
+        .catch(error => {
+          console.error('Failed to verify Telegram init data:', error);
+          setError('Failed to verify Telegram init data');
+        });
       } catch (error) {
         console.error('Failed to parse Telegram init data:', error);
         setError('Failed to parse Telegram init data');
