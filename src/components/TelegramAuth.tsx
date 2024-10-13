@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTelegramInitData } from '@/hooks/useTelegramInitData';
+import Link from 'next/link';
 
 type DisplayDataRow = {
   title: string;
@@ -27,39 +28,19 @@ export default function TelegramAuth() {
 
   if (!initData) {
     return (
-      <div className="p-4">
-        <h2 className="text-xl font-bold mb-2">Oops</h2>
-        <p>Application was launched with missing init data</p>
+      <div className="bg-blue-500 text-white py-2 px-4 text-sm flex justify-between items-center">
+        <span>🚀 Launch BattleFold in Telegram for the full experience!</span>
+        <Link 
+          href="https://t.me/BattleFold_bot/game" 
+          className="bg-white text-blue-500 px-2 py-1 rounded text-xs font-bold hover:bg-blue-100 transition-colors"
+        >
+          Open
+        </Link>
       </div>
     );
   }
 
-  const initDataRows: DisplayDataRow[] = [
-    { title: 'auth_date', value: initData.auth_date },
-    { title: 'query_id', value: initData.query_id },
-    { title: 'hash', value: initData.hash },
-    { title: 'chat_instance', value: initData.chat_instance },
-    { title: 'chat_type', value: initData.chat_type },
-    { title: 'start_param', value: initData.start_param },
-  ];
-
-  const userRows: DisplayDataRow[] = initData.user
-    ? [
-        { title: 'id', value: initData.user.id },
-        { title: 'first_name', value: initData.user.first_name },
-        { title: 'last_name', value: initData.user.last_name },
-        { title: 'username', value: initData.user.username },
-        { title: 'language_code', value: initData.user.language_code },
-        { title: 'is_bot', value: initData.user.is_bot },
-        { title: 'premium', value: initData.user.premium },
-        { title: 'photo_url', value: initData.user.photo_url },
-      ]
-    : [];
-
-  return (
-    <div className="p-4">
-      <DisplayData header={'Init Data'} rows={initDataRows} />
-      {initData.user && <DisplayData header={'User'} rows={userRows} />}
-    </div>
-  );
+  // If initData is present, the app is opened in Telegram
+  // We don't render anything in this case
+  return null;
 }

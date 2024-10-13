@@ -7,7 +7,7 @@ export interface TelegramUser {
   username?: string;
   language_code?: string;
   is_bot?: boolean;
-  premium?: boolean;
+  is_premium?: boolean;
   photo_url?: string;
 }
 
@@ -19,6 +19,14 @@ export interface InitData {
   chat_instance?: string;
   chat_type?: 'private' | 'group' | 'supergroup' | 'channel';
   start_param?: string;
+  can_send_after?: number;
+  chat?: {
+    id: number;
+    type: 'private' | 'group' | 'supergroup' | 'channel';
+    title?: string;
+    username?: string;
+    photo_url?: string;
+  };
 }
 
 export function useTelegramInitData(): InitData | null {
@@ -33,8 +41,17 @@ export function useTelegramInitData(): InitData | null {
         const decodedInitData = decodeURIComponent(initDataRaw);
         const parsedInitData = Object.fromEntries(new URLSearchParams(decodedInitData));
         
-        if (parsedInitData.user) {
-          parsedInitData.user = JSON.parse(parsedInitData.user);
+        if (typeof parsedInitData.user === 'string') {
+          const userObj = JSON.parse(parsedInitData.user) as TelegramUser;
+          parsedInitData.user = {
+            ...userObj,
+            is_premium: userObj.is_premium ?? userObj.isPremium,
+            photo_url: userObj.photo_url ?? userObj.photoUrl,
+          };
+        }
+
+        if (typeof parsedInitData.chat === 'string') {
+          parsedInitData.chat = JSON.parse(parsedInitData.chat);
         }
 
         setInitData(parsedInitData as InitData);
