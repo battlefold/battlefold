@@ -37,17 +37,25 @@ export function useTelegramInitData() {
     setInitDataRaw(initDataStr);
 
     try {
-      const parsedData: TelegramInitData = {};
+      const parsedData: Partial<TelegramInitData> = {};
       const pairs = initDataStr.split('&');
       for (const pair of pairs) {
         const [key, value] = pair.split('=');
         if (key === 'user') {
           parsedData.user = JSON.parse(decodeURIComponent(value));
         } else {
-          parsedData[key as keyof TelegramInitData] = decodeURIComponent(value);
+          const decodedValue = decodeURIComponent(value);
+          switch (key) {
+            case 'auth_date':
+            case 'can_send_after':
+              parsedData[key] = parseInt(decodedValue, 10);
+              break;
+            default:
+              (parsedData as any)[key] = decodedValue;
+          }
         }
       }
-      setInitDataState(parsedData);
+      setInitDataState(parsedData as TelegramInitData);
     } catch (error) {
       console.error('Failed to parse Telegram init data:', error);
       setError(`Failed to parse Telegram init data: ${(error as Error).message}`);
