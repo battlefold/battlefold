@@ -8,33 +8,40 @@ interface TelegramAuthProps {
 }
 
 const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
-  const { initData, error } = useTelegramInitData();
+  const { initDataState, initDataRows, userRows, error } = useTelegramInitData();
 
   useEffect(() => {
-    if (initData && initData.user) {
-      const userName = `${initData.user.first_name}${initData.user.last_name ? ' ' + initData.user.last_name : ''}`;
+    if (initDataState?.user) {
+      const userName = `${initDataState.user.first_name}${initDataState.user.last_name ? ' ' + initDataState.user.last_name : ''}`;
       onUserAuthenticated(userName);
     }
-  }, [initData, onUserAuthenticated]);
+  }, [initDataState, onUserAuthenticated]);
 
   if (error) {
     return (
       <div className="text-red-500">
         <p>Error: {error}</p>
         <p>Please try reloading the app or contact support if the issue persists.</p>
-        <details>
-          <summary>Debug Information</summary>
-          <pre>{JSON.stringify({ error, initData }, null, 2)}</pre>
-        </details>
       </div>
     );
   }
 
-  if (!initData) {
+  if (!initDataState) {
     return <div>Loading Telegram authentication...</div>;
   }
 
-  return null;
+  return (
+    <div>
+      <h2>Init Data</h2>
+      <pre>{JSON.stringify(initDataRows, null, 2)}</pre>
+      {userRows && (
+        <>
+          <h2>User Data</h2>
+          <pre>{JSON.stringify(userRows, null, 2)}</pre>
+        </>
+      )}
+    </div>
+  );
 };
 
 export default TelegramAuth;

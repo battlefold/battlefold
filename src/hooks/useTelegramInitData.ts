@@ -1,22 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 interface TelegramUser {
   id: number;
   first_name: string;
   last_name?: string;
   username?: string;
+  language_code?: string;
+  is_premium?: boolean;
   // Add other properties as needed
 }
 
 interface TelegramInitData {
+  query_id?: string;
   user: TelegramUser;
   auth_date: number;
   hash: string;
-  // Add other properties as needed
+  start_param?: string;
+  chat_type?: string;
+  chat_instance?: string;
+  can_send_after?: number;
 }
 
 export function useTelegramInitData() {
-  const [initData, setInitData] = useState<TelegramInitData | null>(null);
+  const [initDataRaw, setInitDataRaw] = useState<string | null>(null);
+  const [initDataState, setInitDataState] = useState<TelegramInitData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,51 +35,58 @@ export function useTelegramInitData() {
       return;
     }
 
-    console.log('Raw initDataStr:', initDataStr); // Debug log
+    setInitDataRaw(initDataStr);
 
     try {
-      // Try parsing without decoding first
-      let decodedInitData = JSON.parse(initDataStr);
-      
-      // If parsing succeeds without decoding, log and proceed
-      console.log('Parsed without decoding:', decodedInitData);
-
-      if (!decodedInitData || typeof decodedInitData !== 'object') {
-        // If parsing without decoding doesn't yield an object, try decoding
-        decodedInitData = JSON.parse(decodeURIComponent(initDataStr));
-        console.log('Parsed after decoding:', decodedInitData);
-      }
-
-      if (!decodedInitData || typeof decodedInitData !== 'object') {
-        setError('Invalid Telegram init data format');
-        return;
-      }
-
-      fetch('/api/verify-telegram-data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(decodedInitData),
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.isValid) {
-          setInitData(decodedInitData as TelegramInitData);
-        } else {
-          setError('Invalid Telegram init data signature');
-        }
-      })
-      .catch(error => {
-        console.error('Failed to verify Telegram init data:', error);
-        setError(`Failed to verify Telegram init data: ${error.message}`);
-      });
+      const decodedData = JSON.parse(decodeURIComponent(initDataStr));
+      setInitDataState(decodedData);
     } catch (error) {
       console.error('Failed to parse Telegram init data:', error);
-      console.error('initDataStr:', initDataStr); // Log the raw string for debugging
       setError(`Failed to parse Telegram init data: ${(error as Error).message}`);
     }
   }, []);
 
-  return { initData, error };
+  const initDataRows = useMemo(() => {
+    if (!initDataState || !initDataRaw) {
+      return undefined;
+    }
+    const {
+      auth_date,
+      hash,
+      query_id,
+      chat_type,
+      chat_instance,
+      can_send_after,
+      start_param,
+    } = initDataState;
+    return [
+      { title: 'raw', value: initDataRaw },
+      { title: 'auth_date', value: new Date(auth_date * 1000).toLocaleString() },
+      { title: 'auth_date (raw)', value: auth_date },
+      { title: 'hash', value: hash },
+      { title: 'can_send_after', value: can_send_after ? new Date(can_send_after * 1000).toISOString() : undefined },
+      { title: 'can_send_after (raw)', value: can_send_after },
+      { title: 'query_id', value: query_id },
+      { title: 'start_param', value: start_param },
+      { title: 'chat_type', value: chat_type },
+      { title: 'chat_instance', value: chat_instance },
+    ];
+  }, [initDataState, initDataRaw]);
+
+  const userRows = useMemo(() => {
+    if (!initDataState?.user) {
+      return undefined;
+    }
+    const user = initDataState.user;
+    return [
+      { title: 'id', value: user.id.toString() },
+      { title: 'username', value: user.username },
+      { title: 'last_name', value: user.last_name },
+      { title: 'first_name', value: user.first_name },
+      { title: 'language_code', value: user.language_code },
+      { title: 'is_premium', value: user.is_premium },
+    ];
+  }, [initDataState]);
+
+  return { initDataRaw, initDataState, initDataRows, userRows, error };
 }
