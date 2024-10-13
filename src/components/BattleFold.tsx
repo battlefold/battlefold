@@ -39,7 +39,11 @@ const placeRandomShips = (board: Board, prefix: 'player' | 'ai'): Board => {
   return newBoard
 }
 
-export default function BattleFold() {
+interface BattleFoldProps {
+  userName: string | null;
+}
+
+const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
   const [playerBoard, setPlayerBoard] = useState<Board>(createEmptyBoard())
   const [aiBoard, setAiBoard] = useState<Board>(createEmptyBoard())
   const [playerShipsPlaced, setPlayerShipsPlaced] = useState(0)
@@ -277,6 +281,11 @@ export default function BattleFold() {
     <div className="flex flex-col items-center justify-start min-h-screen bg-[#FBF7EF] pb-28 pt-14">
       <div className="flex flex-col items-center w-full max-w-[300px]">
         <h1 className="text-2xl font-bold mb-2">Play BattleFold</h1>
+        {userName ? (
+          <p>Welcome, {userName}!</p>
+        ) : (
+          <p>Please authenticate with Telegram</p>
+        )}
         <div className="mb-2 text-sm font-semibold h-6 w-full text-center">
           {gameOver 
             ? winner === 'player' ? 'You win!' : 'Enemy wins!' 
@@ -347,3 +356,5 @@ export default function BattleFold() {
     </div>
   )
 }
+
+export default BattleFold

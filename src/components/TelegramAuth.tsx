@@ -23,24 +23,21 @@ function DisplayData({ header, rows }: { header: string; rows: DisplayDataRow[] 
   );
 }
 
-export default function TelegramAuth() {
+interface TelegramAuthProps {
+  onUserAuthenticated: (name: string) => void;
+}
+
+const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
   const initData = useTelegramInitData();
 
-  if (!initData) {
-    return (
-      <div className="bg-blue-500 text-white py-2 px-4 text-sm flex justify-between items-center">
-        <span>🚀 Launch BattleFold in Telegram for the full experience!</span>
-        <Link 
-          href="https://t.me/BattleFold_bot/game" 
-          className="bg-white text-blue-500 px-2 py-1 rounded text-xs font-bold hover:bg-blue-100 transition-colors"
-        >
-          Open
-        </Link>
-      </div>
-    );
-  }
+  React.useEffect(() => {
+    if (initData?.user) {
+      const userName = `${initData.user.first_name}${initData.user.last_name ? ' ' + initData.user.last_name : ''}`;
+      onUserAuthenticated(userName);
+    }
+  }, [initData, onUserAuthenticated]);
 
-  // If initData is present, the app is opened in Telegram
-  // We don't render anything in this case
-  return null;
-}
+  return null; // This component doesn't render anything
+};
+
+export default TelegramAuth;
