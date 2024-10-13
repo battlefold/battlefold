@@ -11,7 +11,7 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
   const { initData, error } = useTelegramInitData();
 
   useEffect(() => {
-    if (initData?.user) {
+    if (initData && initData.user) {
       const userName = `${initData.user.first_name}${initData.user.last_name ? ' ' + initData.user.last_name : ''}`;
       onUserAuthenticated(userName);
     }

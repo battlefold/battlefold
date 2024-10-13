@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { verifyTelegramWebAppData } from '@/utils/telegramAuth'; // You'll need to implement this function
+import { verifyTelegramWebAppData } from '@/utils/telegramAuth';
 
 interface TelegramUser {
   id: number;
@@ -10,7 +10,7 @@ interface TelegramUser {
 }
 
 interface TelegramInitData {
-  user?: TelegramUser;
+  user: TelegramUser;
   auth_date: number;
   hash: string;
   // Add other properties as needed
@@ -28,7 +28,6 @@ export function useTelegramInitData() {
       try {
         const decodedInitData = JSON.parse(decodeURIComponent(initDataStr)) as TelegramInitData;
         
-        // Verify the init data (you need to implement this function)
         if (verifyTelegramWebAppData(decodedInitData)) {
           setInitData(decodedInitData);
         } else {
