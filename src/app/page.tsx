@@ -27,7 +27,7 @@ export default function Home() {
 
   return (
     <div>
-      {!userName && <TelegramAuth onUserAuthenticated={handleUserAuthenticated} />}
+      <TelegramAuth onUserAuthenticated={handleUserAuthenticated} />
       <BattleFold userName={userName} />
     </div>
   )

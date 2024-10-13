@@ -2,13 +2,14 @@
 
 import React, { useEffect } from 'react';
 import { useTelegramInitData } from '@/hooks/useTelegramInitData';
+import Link from 'next/link';
 
 interface TelegramAuthProps {
   onUserAuthenticated: (name: string) => void;
 }
 
 const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
-  const { initDataState, initDataRows, userRows, error } = useTelegramInitData();
+  const { initDataState, error } = useTelegramInitData();
 
   useEffect(() => {
     if (initDataState?.user) {
@@ -19,47 +20,17 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
 
   if (error) {
     return (
-      <div className="text-red-500">
-        <p>Error: {error}</p>
-        <p>Please try reloading the app or contact support if the issue persists.</p>
-      </div>
+      <Link href="https://t.me/BattleFold_bot/game" className="block w-full bg-red-500 text-white text-center py-2 px-4 hover:bg-red-600 transition-colors">
+        Error: Please open this app in Telegram
+      </Link>
     );
   }
 
   if (!initDataState) {
-    return <div>Loading Telegram authentication...</div>;
+    return <div className="text-center py-2">Loading Telegram authentication...</div>;
   }
 
-  return (
-    <div>
-      <h2>Init Data</h2>
-      <table>
-        <tbody>
-          {initDataRows?.map((row, index) => (
-            <tr key={index}>
-              <td>{row.title}:</td>
-              <td>{row.value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {userRows && (
-        <>
-          <h2>User Data</h2>
-          <table>
-            <tbody>
-              {userRows.map((row, index) => (
-                <tr key={index}>
-                  <td>{row.title}:</td>
-                  <td>{row.value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      )}
-    </div>
-  );
+  return null;
 };
 
 export default TelegramAuth;
