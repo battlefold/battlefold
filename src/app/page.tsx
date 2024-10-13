@@ -1,18 +1,7 @@
-import React, { useState } from 'react'
-import BattleFold from '@/components/BattleFold'
-import TelegramAuth from '@/components/TelegramAuth'
+'use client';
+
+import HomeContent from '@/components/HomeContent'
 
 export default function Home() {
-  const [username, setUsername] = useState<string | null>(null);
-
-  const handleUserAuthenticated = (name: string) => {
-    setUsername(name);
-  };
-
-  return (
-    <div>
-      <TelegramAuth onUserAuthenticated={handleUserAuthenticated} />
-      {username && <BattleFold username={username} />}
-    </div>
-  )
+  return <HomeContent />
 }
