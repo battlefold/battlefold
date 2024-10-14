@@ -1,4 +1,5 @@
 import React from 'react'
+import { Ship } from 'lucide-react'  // Changed from Anchor to Ship
 
 type Cell = 'empty' | 'player-ship' | 'ai-ship' | 'player-hit' | 'ai-hit' | 'player-miss' | 'ai-miss' | 'both-miss' | 'both-hit' | 'player-footprint' | 'ai-footprint'
 type Board = Cell[][]
@@ -22,9 +23,16 @@ export default function GameBoard({
   gameOver,
   isAnimating
 }: GameBoardProps) {
+  const getCellContent = (playerCell: Cell, aiCell: Cell): JSX.Element | null => {
+    if (gamePhase === 'placement' && playerCell === 'player-ship') {
+      return <Ship className="w-8 h-8 text-gray-600" />  // Changed from Anchor to Ship
+    }
+    return null
+  }
+
   const getCellColor = (playerCell: Cell, aiCell: Cell): string => {
     if (gamePhase === 'placement') {
-      return playerCell === 'player-ship' ? 'bg-blue-500' : 'bg-[#EFE9E0]'
+      return 'bg-[#EFE9E0]'
     } else {
       if (playerCell === 'both-hit' && aiCell === 'both-hit') return 'bg-gradient-to-r from-red-500 to-blue-500'
       if (aiCell === 'player-hit') return 'bg-blue-500'
@@ -47,10 +55,12 @@ export default function GameBoard({
           return (
             <button
               key={`${x}-${y}`}
-              className={`w-full h-full aspect-square ${getCellColor(playerCell, aiCell)} rounded-sm`}
+              className={`w-full h-full aspect-square ${getCellColor(playerCell, aiCell)} rounded-sm flex items-center justify-center`}
               onClick={() => handleCellClick(x, y)}
               disabled={gameOver || (!isPlayerTurn && gamePhase === 'battle') || gamePhase === 'countdown' || isAnimating}
-            />
+            >
+              {getCellContent(playerCell, aiCell)}
+            </button>
           )
         })
       )}

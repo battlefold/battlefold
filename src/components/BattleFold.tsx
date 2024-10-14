@@ -214,9 +214,7 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
 
     // If AI hit, schedule another turn
     if (isHit && !gameOver) {
-      setTimeout(() => {
-        aiTurn()
-      }, 1000)
+      setTimeout(aiTurn, 1000)
     } else {
       setIsPlayerTurn(true) // Only set to player's turn if AI missed
     }
