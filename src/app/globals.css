@@ -76,3 +76,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Disable hover effects for mobile */
+@media (hover: hover) and (pointer: fine) {
+  /* Add any desktop-specific hover styles here if needed */
+}

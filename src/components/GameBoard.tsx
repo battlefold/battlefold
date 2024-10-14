@@ -47,7 +47,7 @@ export default function GameBoard({
           return (
             <button
               key={`${x}-${y}`}
-              className={`w-full h-full aspect-square ${getCellColor(playerCell, aiCell)} rounded-sm hover:opacity-75 transition-opacity`}
+              className={`w-full h-full aspect-square ${getCellColor(playerCell, aiCell)} rounded-sm`}
               onClick={() => handleCellClick(x, y)}
               disabled={gameOver || (!isPlayerTurn && gamePhase === 'battle') || gamePhase === 'countdown' || isAnimating}
             />
