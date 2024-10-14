@@ -75,8 +75,11 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
       setTimeout(() => {
         setGamePhase('countdown')
       }, 1000)
+    } else {
+      // Update the initial message to include the user's name if available
+      setMessage(userName ? `Place your ships, ${userName}!` : "Place your ships!")
     }
-  }, [playerShipsPlaced])
+  }, [playerShipsPlaced, userName])
 
   useEffect(() => {
     let timer: NodeJS.Timeout
@@ -281,11 +284,6 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
     <div className="flex flex-col items-center justify-start min-h-screen bg-[#FBF7EF] pb-28 pt-14">
       <div className="flex flex-col items-center w-full max-w-[300px]">
         <h1 className="text-2xl font-bold mb-2">Play BattleFold</h1>
-        {userName ? (
-          <p>Welcome, {userName}!</p>
-        ) : (
-          <p>Please authenticate with Telegram</p>
-        )}
         <div className="mb-2 text-sm font-semibold h-6 w-full text-center">
           {gameOver 
             ? winner === 'player' ? 'You win!' : 'Enemy wins!' 
