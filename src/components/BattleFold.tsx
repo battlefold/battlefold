@@ -58,7 +58,8 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
   const [animationBoard, setAnimationBoard] = useState<Board>(createEmptyBoard())
   const [playerPoints, setPlayerPoints] = useState(0)
   const [aiPoints, setAiPoints] = useState(0)
-  const [roundMultiplier, setRoundMultiplier] = useState(INITIAL_ROUND_MULTIPLIER)  // Changed from turnMultiplier
+  const [playerRoundMultiplier, setPlayerRoundMultiplier] = useState(INITIAL_ROUND_MULTIPLIER)
+  const [aiRoundMultiplier, setAiRoundMultiplier] = useState(INITIAL_ROUND_MULTIPLIER)
   const [playerStreakMultiplier, setPlayerStreakMultiplier] = useState(1)  // Changed from playerStreak and initialized to 1
   const [aiStreakMultiplier, setAiStreakMultiplier] = useState(1)  // Changed from aiStreak and initialized to 1
   const [showClaimPointsPopup, setShowClaimPointsPopup] = useState(false)
@@ -67,16 +68,7 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
   const router = useRouter()
 
   useEffect(() => {
-    if (playerShipsPlaced === SHIP_COUNT) {
-      setAiBoard(placeRandomShips(createEmptyBoard(), 'ai'))
-      setMessage("Preparing for battle!")
-      
-      // Add 1-second delay before starting the countdown
-      setTimeout(() => {
-        setGamePhase('countdown')
-      }, 1000)
-    } else {
-      // Update the initial message to include the user's name if available
+    if (playerShipsPlaced === 0) {
       setMessage(userName ? `Place your ships, ${userName}!` : "Place your ships!")
     }
   }, [playerShipsPlaced, userName])
@@ -114,7 +106,7 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
     return () => clearInterval(animationTimer)
   }, [gamePhase, isAnimating])
 
-  const calculatePoints = (isHit: boolean, streakMultiplier: number) => {
+  const calculatePoints = (isHit: boolean, streakMultiplier: number, roundMultiplier: number) => {
     const basePoints = isHit ? BASE_POINTS_HIT : BASE_POINTS_MISS
     return Math.round(basePoints * roundMultiplier * streakMultiplier)
   }
@@ -123,12 +115,23 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
     if (gameOver || !isPlayerTurn || gamePhase === 'countdown') return
 
     if (gamePhase === 'placement') {
-      if (playerBoard[y][x] === 'empty') {
+      if (playerBoard[y][x] === 'empty' && playerShipsPlaced < SHIP_COUNT) {
         const newBoard = playerBoard.map(row => [...row])
         newBoard[y][x] = 'player-ship'
         setPlayerBoard(newBoard)
-        setPlayerShipsPlaced(prevCount => prevCount + 1)
-        setMessage(`Ship placed! (${playerShipsPlaced + 1}/${SHIP_COUNT})`)
+        const newShipsPlaced = playerShipsPlaced + 1
+        setPlayerShipsPlaced(newShipsPlaced)
+        if (newShipsPlaced === SHIP_COUNT) {
+          setMessage("All ships placed. Preparing for battle!")
+          setTimeout(() => {
+            setAiBoard(placeRandomShips(createEmptyBoard(), 'ai'))
+            setGamePhase('countdown')
+          }, 1000)
+        } else {
+          setMessage(`Ship placed! (${newShipsPlaced}/${SHIP_COUNT})`)
+        }
+      } else if (playerShipsPlaced >= SHIP_COUNT) {
+        setMessage(`You've already placed all ${SHIP_COUNT} ships!`)
       }
     } else {
       if (aiBoard[y][x] === 'player-hit' || aiBoard[y][x] === 'player-miss' || aiBoard[y][x] === 'both-miss' || aiBoard[y][x] === 'both-hit' || aiBoard[y][x] === 'player-footprint') {
@@ -141,7 +144,7 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
 
       let isHit = false
       if (newAiBoard[y][x] === 'ai-ship') {
-        if (newPlayerBoard[y][x] === 'player-ship') {
+        if (newPlayerBoard[y][x] === 'ai-hit') {
           newAiBoard[y][x] = 'both-hit'
           newPlayerBoard[y][x] = 'both-hit'
         } else {
@@ -162,11 +165,11 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
         setPlayerStreakMultiplier(1)
       }
 
-      const points = calculatePoints(isHit, playerStreakMultiplier)
+      const points = calculatePoints(isHit, playerStreakMultiplier, playerRoundMultiplier)
       setPlayerPoints(prev => prev + points)
       setPlayerBoard(newPlayerBoard)
       setAiBoard(newAiBoard)
-      setRoundMultiplier(prev => Math.max(prev - 1, 1))
+      setPlayerRoundMultiplier(prev => Math.max(prev - 1, 1))
       checkGameOver(newPlayerBoard, newAiBoard)
     }
   }
@@ -182,13 +185,13 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
 
     let isHit = false
     if (newPlayerBoard[y][x] === 'player-ship') {
-      if (newAiBoard[y][x] === 'ai-ship') {
+      if (newAiBoard[y][x] === 'player-hit') {
         newPlayerBoard[y][x] = 'both-hit'
         newAiBoard[y][x] = 'both-hit'
       } else {
         newPlayerBoard[y][x] = 'ai-hit'
       }
-      setMessage("Enemy hit your ship! Your turn.")
+      setMessage("Enemy hit your ship! Enemy's turn again.")
       isHit = true
       setAiStreakMultiplier(prev => prev + 1)
     } else {
@@ -202,13 +205,21 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
       setAiStreakMultiplier(1)
     }
 
-    const points = calculatePoints(isHit, aiStreakMultiplier)
+    const points = calculatePoints(isHit, aiStreakMultiplier, aiRoundMultiplier)
     setAiPoints(prev => prev + points)
     setPlayerBoard(newPlayerBoard)
     setAiBoard(newAiBoard)
-    setIsPlayerTurn(true)
-    setRoundMultiplier(prev => Math.max(prev - 1, 1))
+    setAiRoundMultiplier(prev => Math.max(prev - 1, 1))
     checkGameOver(newPlayerBoard, newAiBoard)
+
+    // If AI hit, schedule another turn
+    if (isHit && !gameOver) {
+      setTimeout(() => {
+        aiTurn()
+      }, 1000)
+    } else {
+      setIsPlayerTurn(true) // Only set to player's turn if AI missed
+    }
   }
 
   useEffect(() => {
@@ -245,7 +256,8 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
     setAnimationBoard(createEmptyBoard())
     setPlayerPoints(0)
     setAiPoints(0)
-    setRoundMultiplier(INITIAL_ROUND_MULTIPLIER)
+    setPlayerRoundMultiplier(INITIAL_ROUND_MULTIPLIER)
+    setAiRoundMultiplier(INITIAL_ROUND_MULTIPLIER)
     setPlayerStreakMultiplier(1)
     setAiStreakMultiplier(1)
   }
@@ -291,8 +303,8 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
           }
         </div>
         <PlayerStats
-          roundMultiplier={roundMultiplier}
-          streakMultiplier={isPlayerTurn ? playerStreakMultiplier : aiStreakMultiplier}
+          roundMultiplier={playerRoundMultiplier}
+          streakMultiplier={playerStreakMultiplier}
           playerPoints={playerPoints}
           aiPoints={aiPoints}
         />

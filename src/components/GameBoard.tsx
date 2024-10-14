@@ -26,10 +26,10 @@ export default function GameBoard({
     if (gamePhase === 'placement') {
       return playerCell === 'player-ship' ? 'bg-blue-500' : 'bg-[#EFE9E0]'
     } else {
-      if (playerCell === 'both-hit' || aiCell === 'both-hit') return 'bg-gradient-to-r from-red-500 to-blue-500'
-      if (playerCell === 'both-miss' || aiCell === 'both-miss') return 'bg-black'
+      if (playerCell === 'both-hit' && aiCell === 'both-hit') return 'bg-gradient-to-r from-red-500 to-blue-500'
       if (aiCell === 'player-hit') return 'bg-blue-500'
       if (playerCell === 'ai-hit') return 'bg-red-500'
+      if (playerCell === 'both-miss' || aiCell === 'both-miss') return 'bg-black'
       if (aiCell === 'player-miss') return 'bg-gray-300'
       if (playerCell === 'ai-miss') return 'bg-gray-100'
       if (aiCell === 'player-footprint') return 'bg-blue-300/30'
