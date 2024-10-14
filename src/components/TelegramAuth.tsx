@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTelegramInitData } from '@/hooks/useTelegramInitData';
 import Link from 'next/link';
 
@@ -10,13 +10,25 @@ interface TelegramAuthProps {
 
 const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
   const { initDataState, error } = useTelegramInitData();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('isAuthenticated') === 'true';
+    }
+    return false;
+  });
 
   useEffect(() => {
     if (initDataState?.user) {
       const userName = `${initDataState.user.first_name}${initDataState.user.last_name ? ' ' + initDataState.user.last_name : ''}`;
       onUserAuthenticated(userName);
+      setIsAuthenticated(true);
+      localStorage.setItem('isAuthenticated', 'true');
     }
   }, [initDataState, onUserAuthenticated]);
+
+  if (isAuthenticated) {
+    return null;
+  }
 
   if (error) {
     return (

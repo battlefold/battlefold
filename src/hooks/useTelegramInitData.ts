@@ -21,21 +21,35 @@ interface TelegramInitData {
 }
 
 export function useTelegramInitData() {
-  const [initDataRaw, setInitDataRaw] = useState<string | null>(null);
+  const [initDataRaw, setInitDataRaw] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('telegramInitData');
+    }
+    return null;
+  });
   const [initDataState, setInitDataState] = useState<TelegramInitData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.hash.slice(1));
-    const initDataStr = searchParams.get('tgWebAppData');
-    
-    if (!initDataStr) {
-      setError('No Telegram init data found in URL');
-      return;
+    if (initDataRaw) {
+      // If we already have initDataRaw in localStorage, use it
+      parseInitData(initDataRaw);
+    } else {
+      // Otherwise, try to get it from the URL
+      const searchParams = new URLSearchParams(window.location.hash.slice(1));
+      const initDataStr = searchParams.get('tgWebAppData');
+      
+      if (initDataStr) {
+        setInitDataRaw(initDataStr);
+        localStorage.setItem('telegramInitData', initDataStr);
+        parseInitData(initDataStr);
+      } else {
+        setError('No Telegram init data found');
+      }
     }
+  }, []);
 
-    setInitDataRaw(initDataStr);
-
+  function parseInitData(initDataStr: string) {
     try {
       const parsedData: Partial<TelegramInitData> = {};
       const pairs = initDataStr.split('&');
@@ -60,7 +74,7 @@ export function useTelegramInitData() {
       console.error('Failed to parse Telegram init data:', error);
       setError(`Failed to parse Telegram init data: ${(error as Error).message}`);
     }
-  }, []);
+  }
 
   const initDataRows = useMemo(() => {
     if (!initDataState || !initDataRaw) {
