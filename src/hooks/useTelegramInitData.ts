@@ -5,13 +5,18 @@ export function useTelegramInitData() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.hash.slice(1));
-    const initDataStr = searchParams.get('tgWebAppData');
-    
-    if (initDataStr) {
-      setInitDataRaw(initDataStr);
+    const tgWebApp = (window as any).Telegram?.WebApp;
+    if (tgWebApp) {
+      setInitDataRaw(tgWebApp.initData);
     } else {
-      setError('No Telegram init data found');
+      const searchParams = new URLSearchParams(window.location.hash.slice(1));
+      const initDataStr = searchParams.get('tgWebAppData');
+      
+      if (initDataStr) {
+        setInitDataRaw(initDataStr);
+      } else {
+        setError('No Telegram init data found');
+      }
     }
   }, []);
 

@@ -32,7 +32,7 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
           localStorage.setItem('isAuthenticated', 'true');
         } catch (error: any) {
           console.error('Authentication failed:', error);
-          setError(`Authentication failed: ${error.message}. ${error.response?.data?.message || ''}`);
+          setError(`Authentication failed: ${error.message}. ${JSON.stringify(error.response?.data || {})}`);
         } finally {
           setIsLoading(false);
         }
