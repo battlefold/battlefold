@@ -29,10 +29,12 @@ export const authenticateTelegram = async (telegramInitData: string) => {
       isBot: user.is_bot,
       isPremium: user.is_premium,
       languageCode: user.language_code,
-      allowsWriteToPm: parsedInitData.auth_date,
-      addedToAttachmentMenu: parsedInitData.query_id,
-      inviteCode: parsedInitData.hash,
+      allowsWriteToPm: user.allows_write_to_pm,
+      addedToAttachmentMenu: user.added_to_attachment_menu,
+      // Remove the inviteCode field
     };
+
+    console.log('Request body:', requestBody);
 
     const response = await api.post('/auth/telegram', requestBody);
     console.log('Authentication response:', response.data);
