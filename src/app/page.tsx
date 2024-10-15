@@ -52,11 +52,15 @@ export default function Home() {
 
   return (
     <div>
-      <TelegramAuth onUserAuthenticated={handleUserAuthenticated} />
+      {!isAuthenticated && (
+        <TelegramAuth onUserAuthenticated={handleUserAuthenticated} />
+      )}
       {authError && <div className="text-red-500">{authError}</div>}
-      <div>Authentication status: {isAuthenticated ? 'Authenticated' : 'Not authenticated'}</div>
-      <div>User name: {userName || 'Not set'}</div>
-      <BattleFold userName={userName} />
+      {isAuthenticated ? (
+        <BattleFold userName={userName} />
+      ) : (
+        <div>Waiting for authentication...</div>
+      )}
     </div>
   )
 }

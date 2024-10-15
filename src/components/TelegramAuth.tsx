@@ -36,23 +36,27 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
         } finally {
           setIsLoading(false);
         }
+      } else {
+        setError('No Telegram init data found. Please open this app in Telegram.');
       }
     };
 
     authenticate();
   }, [initDataRaw, onUserAuthenticated]);
 
-  return (
-    <div>
-      {isLoading && <div className="text-center py-2">Authenticating...</div>}
-      {error && (
-        <Link href="https://t.me/BattleFold_bot/game" className="block w-full bg-red-500 text-white text-center py-2 px-4 hover:bg-red-600 transition-colors">
-          Error: {error}. Please open this app in Telegram.
-        </Link>
-      )}
-      <div>Init data: {initDataRaw ? 'Present' : 'Not present'}</div>
-    </div>
-  );
+  if (isLoading) {
+    return <div className="text-center py-2">Authenticating...</div>;
+  }
+
+  if (error) {
+    return (
+      <Link href="https://t.me/BattleFold_bot/game" className="block w-full bg-red-500 text-white text-center py-2 px-4 hover:bg-red-600 transition-colors">
+        Error: {error}. Please open this app in Telegram.
+      </Link>
+    );
+  }
+
+  return null;
 };
 
 export default TelegramAuth;
