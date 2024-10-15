@@ -12,7 +12,29 @@ const api = axios.create({
 export const authenticateTelegram = async (telegramInitData: string) => {
   try {
     console.log('Sending authentication request to:', `${API_BASE_URL}/auth/telegram`);
-    const response = await api.post('/auth/telegram', { init_data: telegramInitData });
+    
+    // Parse the initData string into an object
+    const parsedInitData = Object.fromEntries(new URLSearchParams(telegramInitData));
+    
+    // Extract the user object from the parsed data
+    const user = JSON.parse(parsedInitData.user);
+    
+    // Construct the request body according to the API expectations
+    const requestBody = {
+      id: user.id,
+      username: user.username,
+      photoUrl: user.photo_url,
+      lastName: user.last_name,
+      firstName: user.first_name,
+      isBot: user.is_bot,
+      isPremium: user.is_premium,
+      languageCode: user.language_code,
+      allowsWriteToPm: parsedInitData.auth_date,
+      addedToAttachmentMenu: parsedInitData.query_id,
+      inviteCode: parsedInitData.hash,
+    };
+
+    const response = await api.post('/auth/telegram', requestBody);
     console.log('Authentication response:', response.data);
     return response.data;
   } catch (error: any) {
