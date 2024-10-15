@@ -10,16 +10,13 @@ const api = axios.create({
 });
 
 export const authenticateTelegram = async (telegramInitData: string) => {
+  console.log('Sending authentication request to:', `${API_BASE_URL}/auth/telegram`);
+  console.log('Telegram init data:', telegramInitData);
+  
   try {
-    console.log('Sending authentication request to:', `${API_BASE_URL}/auth/telegram`);
-    
-    // Parse the initData string into an object
     const parsedInitData = Object.fromEntries(new URLSearchParams(telegramInitData));
-    
-    // Extract the user object from the parsed data
     const user = JSON.parse(parsedInitData.user);
     
-    // Construct the request body according to the API expectations
     const requestBody = {
       id: user.id,
       username: user.username,
@@ -31,7 +28,6 @@ export const authenticateTelegram = async (telegramInitData: string) => {
       languageCode: user.language_code,
       allowsWriteToPm: user.allows_write_to_pm,
       addedToAttachmentMenu: user.added_to_attachment_menu,
-      // Remove the inviteCode field
     };
 
     console.log('Request body:', requestBody);
@@ -65,15 +61,17 @@ export const logout = async (refreshToken: string) => {
 };
 
 export const getUserInfo = async (accessToken: string) => {
+  console.log('Fetching user info');
   try {
     const response = await api.get('/users/me', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
+    console.log('User info response:', response.data);
     return response.data;
-  } catch (error) {
-    console.error('Failed to get user info:', error);
+  } catch (error: any) {
+    console.error('Failed to get user info:', error.response?.data || error.message);
     throw error;
   }
 };
