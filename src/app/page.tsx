@@ -3,31 +3,59 @@
 import React, { useState, useEffect } from 'react'
 import BattleFold from '@/components/BattleFold'
 import TelegramAuth from '@/components/TelegramAuth'
+import { getUserInfo, refreshToken } from '@/utils/api';
 
 export default function Home() {
-  const [userName, setUserName] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('userName');
-    }
-    return null;
-  });
+  const [userName, setUserName] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const handleUserAuthenticated = (name: string) => {
     setUserName(name);
-    localStorage.setItem('userName', name);
+    setIsAuthenticated(true);
   }
 
   useEffect(() => {
-    // Check if the user is already authenticated
-    const storedUserName = localStorage.getItem('userName');
-    if (storedUserName) {
-      setUserName(storedUserName);
-    }
+    const checkAuth = async () => {
+      const storedAccessToken = localStorage.getItem('accessToken');
+      const storedRefreshToken = localStorage.getItem('refreshToken');
+
+      if (storedAccessToken && storedRefreshToken) {
+        try {
+          const userInfo = await getUserInfo(storedAccessToken);
+          setUserName(userInfo.username || `${userInfo.first_name} ${userInfo.last_name || ''}`);
+          setIsAuthenticated(true);
+        } catch (error) {
+          // Access token might be expired, try refreshing
+          try {
+            const newTokens = await refreshToken(storedRefreshToken);
+            localStorage.setItem('accessToken', newTokens.access_token);
+            localStorage.setItem('refreshToken', newTokens.refresh_token);
+            const userInfo = await getUserInfo(newTokens.access_token);
+            setUserName(userInfo.username || `${userInfo.first_name} ${userInfo.last_name || ''}`);
+            setIsAuthenticated(true);
+          } catch (refreshError) {
+            // Refresh failed, user needs to re-authenticate
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            setIsAuthenticated(false);
+            setAuthError('Authentication failed. Please try again.');
+          }
+        }
+      } else {
+        setAuthError('No stored tokens found.');
+      }
+    };
+
+    checkAuth();
   }, []);
 
   return (
     <div>
       <TelegramAuth onUserAuthenticated={handleUserAuthenticated} />
+      {authError && <div className="text-red-500">{authError}</div>}
+      <div>Authentication status: {isAuthenticated ? 'Authenticated' : 'Not authenticated'}</div>
+      <div>User name: {userName || 'Not set'}</div>
       <BattleFold userName={userName} />
     </div>
   )
