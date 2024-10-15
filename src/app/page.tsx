@@ -43,7 +43,8 @@ export default function Home() {
           }
         }
       } else {
-        setAuthError('No stored tokens found.');
+        // No stored tokens, we need to authenticate
+        setIsAuthenticated(false);
       }
     };
 

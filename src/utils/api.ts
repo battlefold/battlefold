@@ -11,10 +11,12 @@ const api = axios.create({
 
 export const authenticateTelegram = async (telegramInitData: string) => {
   try {
+    console.log('Sending authentication request to:', `${API_BASE_URL}/auth/telegram`);
     const response = await api.post('/auth/telegram', { init_data: telegramInitData });
+    console.log('Authentication response:', response.data);
     return response.data;
-  } catch (error) {
-    console.error('Telegram authentication failed:', error);
+  } catch (error: any) {
+    console.error('Telegram authentication failed:', error.response?.data || error.message);
     throw error;
   }
 };

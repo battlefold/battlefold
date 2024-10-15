@@ -30,9 +30,9 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
           console.log('User info:', userInfo);
           onUserAuthenticated(userInfo.username || `${userInfo.first_name} ${userInfo.last_name || ''}`);
           localStorage.setItem('isAuthenticated', 'true');
-        } catch (error) {
+        } catch (error: any) {
           console.error('Authentication failed:', error);
-          setError('Authentication failed. Please try again.');
+          setError(`Authentication failed: ${error.message}. ${error.response?.data?.message || ''}`);
         } finally {
           setIsLoading(false);
         }
@@ -50,9 +50,12 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
 
   if (error) {
     return (
-      <Link href="https://t.me/BattleFold_bot/game" className="block w-full bg-red-500 text-white text-center py-2 px-4 hover:bg-red-600 transition-colors">
-        Error: {error}. Please open this app in Telegram.
-      </Link>
+      <div>
+        <Link href="https://t.me/BattleFold_bot/game" className="block w-full bg-red-500 text-white text-center py-2 px-4 hover:bg-red-600 transition-colors">
+          Error: {error}. Please open this app in Telegram.
+        </Link>
+        <div>Init data: {initDataRaw ? 'Present' : 'Not present'}</div>
+      </div>
     );
   }
 
