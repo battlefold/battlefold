@@ -19,11 +19,15 @@ const TelegramAuth: React.FC<TelegramAuthProps> = ({ onUserAuthenticated }) => {
       if (initDataRaw) {
         setIsLoading(true);
         try {
+          console.log('Attempting to authenticate with Telegram data:', initDataRaw);
           const authResult = await authenticateTelegram(initDataRaw);
+          console.log('Authentication result:', authResult);
           localStorage.setItem('accessToken', authResult.access_token);
           localStorage.setItem('refreshToken', authResult.refresh_token);
 
+          console.log('Fetching user info...');
           const userInfo = await getUserInfo(authResult.access_token);
+          console.log('User info:', userInfo);
           onUserAuthenticated(userInfo.username || `${userInfo.first_name} ${userInfo.last_name || ''}`);
           localStorage.setItem('isAuthenticated', 'true');
         } catch (error) {
