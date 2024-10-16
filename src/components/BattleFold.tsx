@@ -88,8 +88,8 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
     let animationTimer: NodeJS.Timeout
     if (gamePhase === 'result' && isAnimating) {
       const animate = () => {
-        setAnimationBoard(prevBoard => 
-          prevBoard.map(row => 
+        setAnimationBoard(prevBoard =>
+          prevBoard.map(row =>
             row.map(() => getRandomCellColor())
           )
         )
@@ -112,6 +112,7 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
   }
 
   const handleCellClick = (x: number, y: number) => {
+    console.log('Cell clicked:', x, y);
     if (gameOver || !isPlayerTurn || gamePhase === 'countdown') return
 
     if (gamePhase === 'placement') {
@@ -139,6 +140,9 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
         return
       }
 
+      console.log("playerBoard", playerBoard);
+      console.log("aiBoard", aiBoard);
+
       const newPlayerBoard = playerBoard.map(row => [...row])
       const newAiBoard = aiBoard.map(row => [...row])
 
@@ -165,6 +169,12 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
         setPlayerStreakMultiplier(1)
       }
 
+      console.log('isHit:', isHit);
+      console.log('playerStreakMultiplier:', playerStreakMultiplier);
+      console.log('playerRoundMultiplier:', playerRoundMultiplier);
+      console.log('newPlayerBoard:', newPlayerBoard);
+      console.log('newAiBoard:', newAiBoard);
+
       const points = calculatePoints(isHit, playerStreakMultiplier, playerRoundMultiplier)
       setPlayerPoints(prev => prev + points)
       setPlayerBoard(newPlayerBoard)
@@ -175,25 +185,44 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
   }
 
   const aiTurn = () => {
-    const newPlayerBoard = playerBoard.map(row => [...row])
-    const newAiBoard = aiBoard.map(row => [...row])
+    console.log('AI turn!');
+
+    console.log('playerBoard 1:', playerBoard);
+    console.log('aiBoard: 1', aiBoard);
+
+
+    const newPlayerBoard = playerBoard
+    const newAiBoard = aiBoard
+
+    console.log('newPlayerBoard: 2', newPlayerBoard);
+    console.log('newAiBoard: 2', newAiBoard);
     let x, y
     do {
       x = Math.floor(Math.random() * BOARD_SIZE)
       y = Math.floor(Math.random() * BOARD_SIZE)
     } while (newPlayerBoard[y][x] === 'ai-hit' || newPlayerBoard[y][x] === 'ai-miss' || newPlayerBoard[y][x] === 'both-miss' || newPlayerBoard[y][x] === 'both-hit' || newPlayerBoard[y][x] === 'ai-footprint')
 
+    console.log('ai selected x:', x);
+    console.log('ai selected y:', y);
+
     let isHit = false
     if (newPlayerBoard[y][x] === 'player-ship') {
       if (newAiBoard[y][x] === 'player-hit') {
+
+        console.log('AI hit a cell!');
+        console.log('newPlayerBoard: 3 ', newPlayerBoard);
+        console.log('newAiBoard: 3', newAiBoard);
+
+
         newPlayerBoard[y][x] = 'both-hit'
         newAiBoard[y][x] = 'both-hit'
       } else {
         newPlayerBoard[y][x] = 'ai-hit'
+        setMessage("Enemy hit your ship! Enemy's turn again.")
+        isHit = true
+        setAiStreakMultiplier(prev => prev + 1)
       }
-      setMessage("Enemy hit your ship! Enemy's turn again.")
-      isHit = true
-      setAiStreakMultiplier(prev => prev + 1)
+
     } else {
       if (newAiBoard[y][x] === 'player-footprint') {
         newPlayerBoard[y][x] = 'both-miss'
@@ -214,7 +243,16 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
 
     // If AI hit, schedule another turn
     if (isHit && !gameOver) {
-      setTimeout(aiTurn, 1000)
+      console.log('Scheduling AI turn in 1 second...');
+      console.log('newPlayerBoard: 4', newPlayerBoard);
+      console.log('newAiBoard: 4', newAiBoard);
+
+      console.log('playerBoard: 5', playerBoard);
+      console.log('aiBoard: 5', newAiBoard);
+
+      const timer = setTimeout(aiTurn, 1000)
+      return () => clearTimeout(timer)
+
     } else {
       setIsPlayerTurn(true) // Only set to player's turn if AI missed
     }
@@ -295,8 +333,8 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
       <div className="flex flex-col items-center w-full max-w-[300px]">
         <h1 className="text-2xl font-bold mb-2">Play BattleFold</h1>
         <div className="mb-2 text-sm font-semibold h-6 w-full text-center">
-          {gameOver 
-            ? winner === 'player' ? 'You win!' : 'Enemy wins!' 
+          {gameOver
+            ? winner === 'player' ? 'You win!' : 'Enemy wins!'
             : message
           }
         </div>
@@ -322,8 +360,8 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
               isAnimating={isAnimating}
             />
             {gamePhase === 'battle' && (
-              <Button 
-                onClick={resetGame} 
+              <Button
+                onClick={resetGame}
                 className="mt-4 px-4 py-1 text-sm font-normal bg-gray-200 text-gray-700 hover:bg-gray-300 w-full"
               >
                 New Game
