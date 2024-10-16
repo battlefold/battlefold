@@ -170,3 +170,48 @@ export const updateRoom = async (roomId: string, data: any) => {
     throw error;
   }
 }
+
+// get users leaderboard
+// users/leaderboard
+export const getLeaderboard = async () => {
+
+  const accessToken = localStorage.getItem('accessToken');
+  if (!accessToken) {
+    throw new Error('Access token not found');
+  }
+
+  try {
+    const response = await api.get('/users/leaderboard', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Failed to get leaderboard:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+
+// get login user leaderboard
+// /users/me/leaderboard
+export const getMyLeaderboard = async () => {
+
+  const accessToken = localStorage.getItem('accessToken');
+  if (!accessToken) {
+    throw new Error('Access token not found');
+  }
+
+  try {
+    const response = await api.get('/users/me/leaderboard', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Failed to get leaderboard:', error.response?.data || error.message);
+    throw error;
+  }
+}

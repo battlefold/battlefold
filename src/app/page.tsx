@@ -25,6 +25,7 @@ export default function Home() {
           const userInfo = await getUserInfo(storedAccessToken);
           setUserName(userInfo.username || `${userInfo.first_name} ${userInfo.last_name || ''}`);
           setIsAuthenticated(true);
+          localStorage.setItem('user', JSON.stringify(userInfo));
         } catch (error) {
           // Access token might be expired, try refreshing
           try {
