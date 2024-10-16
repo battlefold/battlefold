@@ -6,6 +6,7 @@ import GameBoard from './GameBoard'
 import PlayerStats from './PlayerStats'
 import { Button } from "@/components/ui/button"
 import ActionPopup from './ActionPopup'
+import { createRoom, getLastStartedRoom, getRoomById, updateRoom } from '@/utils/api'
 
 const BOARD_SIZE = 6
 const SHIP_COUNT = 3  // Changed from 2 to 3
@@ -15,6 +16,7 @@ const ANIMATION_INTERVAL = 150
 const INITIAL_ROUND_MULTIPLIER = 60  // Changed from INITIAL_TURN_MULTIPLIER
 const BASE_POINTS_HIT = 20
 const BASE_POINTS_MISS = 1
+const AI_TURN_DELAY = 500
 
 type Cell = 'empty' | 'player-ship' | 'ai-ship' | 'player-hit' | 'ai-hit' | 'player-miss' | 'ai-miss' | 'both-miss' | 'both-hit' | 'player-footprint' | 'ai-footprint'
 type Board = Cell[][]
@@ -64,6 +66,9 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
   const [aiStreakMultiplier, setAiStreakMultiplier] = useState(1)  // Changed from aiStreak and initialized to 1
   const [showClaimPointsPopup, setShowClaimPointsPopup] = useState(false)
   const [showCollectMapPopup, setShowCollectMapPopup] = useState(false)
+  const [room, setRoom] = useState({} as any)
+  const [history, setHistory] = useState({} as any)
+  const [isClaimedPoints, setIsClaimedPoints] = useState(false)
 
   const router = useRouter()
 
@@ -111,7 +116,7 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
     return Math.round(basePoints * roundMultiplier * streakMultiplier)
   }
 
-  const handleCellClick = (x: number, y: number) => {
+  const handleCellClick = async (x: number, y: number) => {
     console.log('Cell clicked:', x, y);
     if (gameOver || !isPlayerTurn || gamePhase === 'countdown') return
 
@@ -124,9 +129,10 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
         setPlayerShipsPlaced(newShipsPlaced)
         if (newShipsPlaced === SHIP_COUNT) {
           setMessage("All ships placed. Preparing for battle!")
-          setTimeout(() => {
+          setTimeout(async () => {
             setAiBoard(placeRandomShips(createEmptyBoard(), 'ai'))
             setGamePhase('countdown')
+            await getRoom();
           }, 1000)
         } else {
           setMessage(`Ship placed! (${newShipsPlaced}/${SHIP_COUNT})`)
@@ -180,11 +186,11 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
       setPlayerBoard(newPlayerBoard)
       setAiBoard(newAiBoard)
       setPlayerRoundMultiplier(prev => Math.max(prev - 1, 1))
-      checkGameOver(newPlayerBoard, newAiBoard)
+      await checkGameOver(newPlayerBoard, newAiBoard)
     }
   }
 
-  const aiTurn = () => {
+  const aiTurn = async () => {
     console.log('AI turn!');
 
     console.log('playerBoard 1:', playerBoard);
@@ -239,7 +245,7 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
     setPlayerBoard(newPlayerBoard)
     setAiBoard(newAiBoard)
     setAiRoundMultiplier(prev => Math.max(prev - 1, 1))
-    checkGameOver(newPlayerBoard, newAiBoard)
+    await checkGameOver(newPlayerBoard, newAiBoard)
 
     // If AI hit, schedule another turn
     if (isHit && !gameOver) {
@@ -250,8 +256,7 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
       console.log('playerBoard: 5', playerBoard);
       console.log('aiBoard: 5', newAiBoard);
 
-      const timer = setTimeout(aiTurn, 1000)
-      return () => clearTimeout(timer)
+      setTimeout(async () => aiTurn(), AI_TURN_DELAY)
 
     } else {
       setIsPlayerTurn(true) // Only set to player's turn if AI missed
@@ -260,12 +265,11 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
 
   useEffect(() => {
     if (!isPlayerTurn && !gameOver && gamePhase === 'battle') {
-      const timer = setTimeout(aiTurn, 1000)
-      return () => clearTimeout(timer)
+      setTimeout(async () => aiTurn(), AI_TURN_DELAY)
     }
   }, [isPlayerTurn, gameOver, gamePhase])
 
-  const checkGameOver = (currentPlayerBoard: Board, currentAiBoard: Board) => {
+  const checkGameOver = async (currentPlayerBoard: Board, currentAiBoard: Board) => {
     const playerShipsRemaining = currentPlayerBoard.flat().filter(cell => cell === 'player-ship').length
     const aiShipsRemaining = currentAiBoard.flat().filter(cell => cell === 'ai-ship').length
 
@@ -274,11 +278,50 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
       setWinner(playerShipsRemaining === 0 ? 'ai' : 'player')
       setGamePhase('result')
       setIsAnimating(true)
+
+      const historyLocal = {
+        playerBoard: currentPlayerBoard,
+        aiBoard: currentAiBoard,
+        playerPoints: playerPoints,
+        aiPoints: aiPoints,
+        playerShipsRemaining: playerShipsRemaining,
+        aiShipsRemaining: aiShipsRemaining
+      }
+
+      console.log('historyLocal: ', historyLocal);
+
+      setHistory((prev: any[]) => [...prev, historyLocal])
+
+      console.log('history: ', history);
+
+
       setAnimationBoard(currentPlayerBoard.map(row => row.map(() => getRandomCellColor())))
+    } else {
+
+      const historyLocal = {
+        playerBoard: currentPlayerBoard,
+        aiBoard: currentAiBoard,
+        playerPoints: playerPoints,
+        aiPoints: aiPoints,
+        playerShipsRemaining: playerShipsRemaining,
+        aiShipsRemaining: aiShipsRemaining
+      }
+      console.log('historyLocal: ', historyLocal);
+      setHistory((prev: any[]) => {
+        const updatedHistory = Array.from(prev);
+        updatedHistory.push(historyLocal);
+        return updatedHistory;
+      })
+      console.log('history: ', history);
+
+
     }
   }
 
-  const resetGame = () => {
+  const resetGame = async () => {
+
+    await getRoom();
+
     setPlayerBoard(createEmptyBoard())
     setAiBoard(createEmptyBoard())
     setPlayerShipsPlaced(0)
@@ -296,6 +339,28 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
     setAiRoundMultiplier(INITIAL_ROUND_MULTIPLIER)
     setPlayerStreakMultiplier(1)
     setAiStreakMultiplier(1)
+
+
+
+  }
+
+  const getRoom = async () => {
+
+    let room = await getLastStartedRoom();
+    console.log('room: ', room);
+    if (!room) {
+      room = await createRoom();
+      room = await getRoomById(room.id);
+      console.log('room: ', room);
+    }
+
+    if (!room) {
+      alert('Room not found');
+      return;
+    } else {
+      setRoom(room);
+    }
+
   }
 
   const getRandomCellColor = (): Cell => {
@@ -318,14 +383,44 @@ const BattleFold: React.FC<BattleFoldProps> = ({ userName }) => {
     }
   }
 
-  const handleClaimPoints = () => {
-    console.log('Claim Points')
-    setShowClaimPointsPopup(true)
-  }
+
 
   const handleCollectMap = () => {
     console.log('Collect Map')
     setShowCollectMapPopup(true)
+  }
+
+  const handleClaimPoints = async () => {
+    console.log('Claim Points')
+    if (isClaimedPoints) {
+      setShowClaimPointsPopup(true)
+      return;
+    }
+    console.log('history: ', history);
+    const playerShipsRemaining = playerBoard.flat().filter(cell => cell === 'player-ship').length
+
+    const data = {
+      data: JSON.stringify(history),
+      points: playerPoints,
+      status: playerShipsRemaining === 0 ? 'LOST' : 'WON'
+    }
+
+
+    console.log('data: ', data);
+
+    console.log('room: ', room);
+
+    try {
+      await updateRoom(room.id, data);
+      setIsClaimedPoints(true);
+      setShowClaimPointsPopup(true)
+    } catch (error) {
+      console.log('error: ', error);
+    }
+
+
+
+
   }
 
   return (
