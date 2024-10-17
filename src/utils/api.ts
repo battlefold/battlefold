@@ -16,6 +16,9 @@ export const authenticateTelegram = async (telegramInitData: string) => {
   try {
     const parsedInitData = Object.fromEntries(new URLSearchParams(telegramInitData));
     const user = JSON.parse(parsedInitData.user);
+    const startParam = parsedInitData.start_param || '';
+    console.log('User:', user);
+    console.log('Start param:', startParam);
 
     const requestBody = {
       id: user.id,
@@ -28,6 +31,7 @@ export const authenticateTelegram = async (telegramInitData: string) => {
       languageCode: user.language_code,
       allowsWriteToPm: user.allows_write_to_pm,
       addedToAttachmentMenu: user.added_to_attachment_menu,
+      invitecode: startParam
     };
 
     console.log('Request body:', requestBody);
@@ -60,8 +64,12 @@ export const logout = async (refreshToken: string) => {
   }
 };
 
-export const getUserInfo = async (accessToken: string) => {
+export const getUserInfo = async (accessToken: string | null) => {
   console.log('Fetching user info');
+  accessToken = accessToken || localStorage.getItem('accessToken');
+  if (!accessToken) {
+    throw new Error('Access token not found');
+  }
   try {
     const response = await api.get('/users/me', {
       headers: {
@@ -69,6 +77,7 @@ export const getUserInfo = async (accessToken: string) => {
       },
     });
     console.log('User info response:', response.data);
+    localStorage.setItem('user', JSON.stringify(response.data));
     return response.data;
   } catch (error: any) {
     console.error('Failed to get user info:', error.response?.data || error.message);
@@ -212,6 +221,50 @@ export const getMyLeaderboard = async () => {
     return response.data;
   } catch (error: any) {
     console.error('Failed to get leaderboard:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+//get invite code
+// /users/me/inviteCode
+export const getInviteCode = async () => {
+
+  const accessToken = localStorage.getItem('accessToken');
+  if (!accessToken) {
+    throw new Error('Access token not found');
+  }
+
+  try {
+    const response = await api.get('/users/me/inviteCode', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return response.data.inviteCode;
+  } catch (error: any) {
+    console.error('Failed to get invite code:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+//list of invited users
+// /users/me/invitedUsers
+export const getInvitedUsers = async () => {
+
+  const accessToken = localStorage.getItem('accessToken');
+  if (!accessToken) {
+    throw new Error('Access token not found');
+  }
+
+  try {
+    const response = await api.get('/users/me/invitedUsers', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Failed to get invited users:', error.response?.data || error.message);
     throw error;
   }
 }
