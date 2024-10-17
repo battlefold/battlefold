@@ -7,9 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { getLeaderboard, getMyLeaderboard } from '@/utils/api'
 
-
-
-
 type Player = {
   id: string
   highestPoints: string
@@ -19,7 +16,6 @@ type Player = {
   image: string
 }
 
-// const [leaderboardData, setLeaderboardData] = useState({} as any)
 interface RankingListProps { }
 const RankingList: React.FC<RankingListProps> = () => {
 
@@ -60,25 +56,6 @@ const RankingList: React.FC<RankingListProps> = () => {
 
   }, []);
 
-  // const leaderboardData: Player[] = [
-  //   { id: 1, name: "Admiral Ackbar", wonCount: 15, lostCount: 3, avatar: "https://api.dicebear.com/6.x/bottts/svg?seed=Admiral" },
-  //   { id: 2, name: "Captain Nemo", wonCount: 12, lostCount: 5, avatar: "https://api.dicebear.com/6.x/bottts/svg?seed=Nemo" },
-  //   { id: 3, name: "Sailor Moon", wonCount: 10, lostCount: 7, avatar: "https://api.dicebear.com/6.x/bottts/svg?seed=Moon" },
-  //   { id: 4, name: "Popeye", wonCount: 8, lostCount: 9, avatar: "https://api.dicebear.com/6.x/bottts/svg?seed=Popeye" },
-  //   { id: 5, name: "Jack Sparrow", wonCount: 7, lostCount: 10, avatar: "https://api.dicebear.com/6.x/bottts/svg?seed=Sparrow" },
-  //   { id: 6, name: "Moby Dick", wonCount: 5, lostCount: 12, avatar: "https://api.dicebear.com/6.x/bottts/svg?seed=Moby" },
-  //   { id: 7, name: "Aquaman", wonCount: 3, lostCount: 15, avatar: "https://api.dicebear.com/6.x/bottts/svg?seed=Aquaman" },
-  //   ...Array.from({ length: 13 }, (_, i) => ({
-  //     id: i + 8,
-  //     name: `Player ${i + 8}`,
-  //     wonCount: Math.floor(Math.random() * 20),
-  //     lostCount: Math.floor(Math.random() * 20),
-  //     avatar: `https://api.dicebear.com/6.x/bottts/svg?seed=${i + 8}`
-  //   }))
-  // ]
-
-  // const leaderboardData: Player[] = await getLeaderboard();;
-
 
   console.log("leaderboardData", leaderboardData)
   const currentUser = user ? user?.username : ""
@@ -87,27 +64,6 @@ const RankingList: React.FC<RankingListProps> = () => {
   for (const player of leaderboardData) {
     player.image = player.image ? player.image : `https://api.dicebear.com/6.x/bottts/svg?seed=${player.username}`
   }
-
-  const calculatePoints = (wonCount: number, lostCount: number) => {
-    return wonCount * 3 - lostCount
-  }
-
-  // const sortedPlayers = useMemo(() => {
-  //   return [...leaderboardData].sort((a, b) => {
-  //     const pointsA = calculatePoints(a.wonCount, a.lostCount)
-  //     const pointsB = calculatePoints(b.wonCount, b.lostCount)
-  //     return pointsB - pointsA
-  //   }).slice(0, 20)
-  // }, [])
-
-  // console.log("sortedPlayers", sortedPlayers)
-
-  // const currentUserData = leaderboardData.find(player => player.username === currentUser)
-  // const currentUserRank = 0
-  // const currentUserPoints = currentUserData ? calculatePoints(currentUserData.wonCount, currentUserData.lostCount) : 0
-  // const winRate = currentUserData ? (currentUserData.wonCount / (currentUserData.wonCount + currentUserData.lostCount)) * 100 : 0
-
-
 
   return (
     <ScrollArea className="w-full h-[calc(100vh-64px)]">

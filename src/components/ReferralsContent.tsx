@@ -1,26 +1,80 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Users, Copy, Check, Share2, Percent } from 'lucide-react'
+import { getInviteCode, getInvitedUsers, getUserInfo } from '@/utils/api'
 
-export default function ReferralsContent() {
+
+interface ReferralsContentProps { }
+const ReferralsContent: React.FC<ReferralsContentProps> = () => {
+
   const [copied, setCopied] = useState(false)
-  const referralCode = "BATTLEFOLD123"  // This should be dynamically generated for each user
+  const [inviteCode, setInviteCode] = useState(null)
+  const [invitedUsers, setInvitedUsers] = useState([] as any[])
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(referralCode).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
+  // The URL and text to share via the Telegram deep link
+  const urlToShare = process.env.NEXT_PUBLIC_TG_APP_URL + '?startapp=' + inviteCode;
+  const shareMessage = "Hey, Join BattleFold!"; // Replace with your message
+
+  // Create the Telegram deep link
+  const telegramDeepLink = `https://t.me/share/url?url=${encodeURIComponent(urlToShare)}&text=${encodeURIComponent(shareMessage)}`;
+
+
+  // const copyToClipboard = (inviteCodeParam: string) => {
+  //   const inviteUrl = process.env.NEXT_PUBLIC_TG_APP_URL + '?startapp=' + inviteCodeParam;
+  //   console.log(inviteUrl)
+  //   if (typeof window !== "undefined" && window.navigator) {
+  //     window.navigator.clipboard.writeText(inviteUrl).then(() => {
+  //       setCopied(true)
+
+  //       setTimeout(() => setCopied(false), 1000)
+  //       // window.location = telegramDeepLink
+  //     })
+  //   }
+  //   return;
+  // }
+
+  useEffect(() => {
+    if (!inviteCode) {
+      getInviteCodeCall();
+      getInvitedUsersCall();
+    }
+  }, []);
+
+  const getInviteCodeCall = async () => {
+    let user = localStorage.getItem('user');
+    const parsedUser = JSON.parse(user as string);
+    if (parsedUser.invitecode) {
+      setInviteCode(parsedUser.invitecode);
+      return;
+    }
+    try {
+      const inviteCodeLocal = await getInviteCode();
+      setInviteCode(inviteCodeLocal);
+      await getUserInfo(null);
+    } catch (error) {
+      console.error('Failed to get invite code:', error);
+    }
   }
+
+  const getInvitedUsersCall = async () => {
+    try {
+      const invitedUsers = await getInvitedUsers();
+      setInvitedUsers(invitedUsers);
+    } catch (error) {
+      console.error('Failed to get invited users:', error);
+    }
+  }
+
+
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-[#FBF7EF] pb-28 px-4 pt-8">
       <div className="w-full max-w-[368px]">
         <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Play with Frens</h1>
-        
+
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-lg shadow-md mb-6 text-white">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center">
@@ -28,18 +82,21 @@ export default function ReferralsContent() {
               <h2 className="text-xl font-semibold">Invite Friends</h2>
             </div>
             <div className="bg-white bg-opacity-20 rounded-md px-2 py-1">
-              <span className="font-mono text-sm">{referralCode}</span>
+              <span className="font-mono text-sm">{inviteCode ? inviteCode : '...'}</span>
             </div>
           </div>
           <p className="text-sm mb-3 opacity-90">
             Share your code and earn rewards!
           </p>
-          <Button 
-            className="w-full bg-white text-blue-600 hover:bg-blue-100 transition-colors duration-200 text-sm" 
-            onClick={copyToClipboard}
-          >
-            {copied ? 'Copied!' : 'Invite'}
-          </Button>
+
+          <a
+            href={telegramDeepLink} target="_blank" rel="noopener noreferrer">
+            <Button
+              className="w-full bg-white text-blue-600 hover:bg-blue-100 transition-colors duration-200 text-sm"
+            >Share to Telegram</Button>
+          </a>
+
+
         </div>
 
         <div className="mb-6">
@@ -57,27 +114,37 @@ export default function ReferralsContent() {
             </p>
           </div>
         </div>
+        {invitedUsers.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">Your Friends</h2>
+            <ScrollArea className="h-[calc(100vh-500px)]">
+              <div className="flex flex-col space-y-2">
+                {invitedUsers.map((user) => (
+                  <ReferralItem
+                    key={user.id}
+                    name={user.username ? user.username : ""}
+                    points={user.highestPoints ? user.highestPoints : 0}
+                    image={user.image ? user.image : ""}
+                    earnedPoints={0}
+                  />
+                ))}
 
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">Your Friends</h2>
-        <ScrollArea className="h-[calc(100vh-500px)]">
-          <div className="space-y-2">
-            <ReferralItem name="John Doe" points={1500} earnedPoints={15} />
-            <ReferralItem name="Jane Smith" points={2200} earnedPoints={22} />
-            <ReferralItem name="Bob Johnson" points={800} earnedPoints={8} />
-            {/* Add more referral items here */}
+              </div>
+            </ScrollArea>
           </div>
-        </ScrollArea>
+        )}
+
       </div>
     </div>
   )
 }
 
-function ReferralItem({ name, points, earnedPoints }: { name: string; points: number; earnedPoints: number }) {
+function ReferralItem({ name, points, earnedPoints, image }: { name: string; points: number; earnedPoints: number, image: string }) {
   return (
     <div className="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 flex items-center justify-between">
       <div className="flex items-center">
         <div className="bg-blue-100 p-2 rounded-full mr-3">
-          <Users className="w-4 h-4 text-blue-500" />
+          <img src={image ? image : `https://api.dicebear.com/6.x/bottts/svg?seed=${name}`} alt={name} className="w-10 h-10 rounded-full" />
         </div>
         <div>
           <p className="font-medium text-gray-800 text-sm">{name}</p>
@@ -85,8 +152,10 @@ function ReferralItem({ name, points, earnedPoints }: { name: string; points: nu
         </div>
       </div>
       <div className="text-right">
-        <p className="font-medium text-green-600 text-sm">+{earnedPoints}</p>
+        <p className="font-medium text-green-600 text-sm">+{(points * 1 / 100).toFixed(1)}</p>
       </div>
     </div>
   )
 }
+
+export default ReferralsContent;
