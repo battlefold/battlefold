@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Users, Copy, Check, Share2, Percent } from 'lucide-react'
-import { getInviteCode, getInvitedUsers, getUserInfo } from '@/utils/api'
+import { getInviteCode, getInvitedUsers, getUserInfo, getSettings } from '@/utils/api'
+import AnimatedCounter from './AnimatedCounter'
 
 
 interface ReferralsContentProps { }
@@ -13,6 +14,9 @@ const ReferralsContent: React.FC<ReferralsContentProps> = () => {
   const [copied, setCopied] = useState(false)
   const [inviteCode, setInviteCode] = useState(null)
   const [invitedUsers, setInvitedUsers] = useState([] as any[])
+  const [inviterPoints, setInviterPoints] = useState(100)
+  const [inviterPercentage, setInviterPercentage] = useState(1)
+  const [isLoading, setIsLoading] = useState(true);
 
   // The URL and text to share via the Telegram deep link
   const urlToShare = process.env.NEXT_PUBLIC_TG_APP_URL + '?startapp=' + inviteCode;
@@ -68,7 +72,22 @@ const ReferralsContent: React.FC<ReferralsContentProps> = () => {
     }
   }
 
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        setIsLoading(true);
+        const settings = await getSettings();
+        setInviterPoints(settings.user.inviterPoints);
+        setInviterPercentage(settings.user.inviterPercentage);
+      } catch (error) {
+        console.error('Failed to fetch referral settings:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
+    fetchSettings();
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-[#FBF7EF] pb-28 px-4 pt-8">
@@ -104,13 +123,17 @@ const ReferralsContent: React.FC<ReferralsContentProps> = () => {
           <div className="flex items-center mb-2">
             <Users className="w-5 h-5 text-green-500 mr-2" />
             <p className="text-sm text-gray-600">
-              Earn 100 points for each friend who joins
+              Earn <span className="font-bold">
+                {isLoading ? <AnimatedCounter end={100} duration={2000} /> : inviterPoints}
+              </span> points for each friend who joins
             </p>
           </div>
           <div className="flex items-center">
             <Percent className="w-5 h-5 text-blue-500 mr-2" />
             <p className="text-sm text-gray-600">
-              Earn 1% of total points your friends earn
+              Earn <span className="font-bold">
+                {isLoading ? <AnimatedCounter end={5} duration={2000} /> : inviterPercentage}
+              </span>% of total points your friends earn
             </p>
           </div>
         </div>

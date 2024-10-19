@@ -268,3 +268,17 @@ export const getInvitedUsers = async () => {
     throw error;
   }
 }
+ 
+// get /settings
+export const getSettings = async () => {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch settings');
+  }
+  return response.json();
+};
