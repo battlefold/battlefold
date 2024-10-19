@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'BattleFold',
-  description: 'A strategic naval battle game',
+  description: 'BattleFold Game',
 }
 
 export default function RootLayout({
@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} bg-[#FBF7EF] min-h-screen`}>
         <div className="flex flex-col min-h-screen">
           <main className="flex-grow">
             {children}

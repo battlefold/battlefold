@@ -68,7 +68,7 @@ const RankingList: React.FC<RankingListProps> = () => {
   return (
     <ScrollArea className="w-full h-[calc(100vh-64px)]">
       {leaderboardData.length > 0 ? (
-        <div className="flex flex-col items-center justify-start bg-[#FBF7EF] pb-28 px-1 pt-4">
+        <div className="flex flex-col items-center justify-start pb-28 px-1 pt-4">
           {currentUserData ? (
             <div className="w-full max-w-[368px] mb-6 p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg text-white shadow-lg">
               <div className="flex justify-between items-center mb-2">

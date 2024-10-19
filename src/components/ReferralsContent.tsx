@@ -90,7 +90,7 @@ const ReferralsContent: React.FC<ReferralsContentProps> = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-[#FBF7EF] pb-28 px-4 pt-8">
+    <div className="flex flex-col items-center justify-start min-h-screen pb-28 px-4 pt-8">
       <div className="w-full max-w-[368px]">
         <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Play with Frens</h1>
 
